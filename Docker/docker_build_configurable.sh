@@ -35,7 +35,6 @@ while [[ $# -gt 0 ]]; do
     ;;
   esac
 done
-## Source: https://stackoverflow.com/a/14203146
 
 base_image=""
 if [ "$cuda" == "1" ]
@@ -52,7 +51,7 @@ docker build --rm=true --build-arg BASE_IMAGE=$base_image \
     --build-arg SEG_ONLY=$seg_only \
     --build-arg SURF_ONLY=$surf_only \
     --no-cache \
-    -t fastsurfer:docker_mod_tests_fscnn -f ./Docker/Dockerfile_all .
+    -t fastsurfer:docker_mod_tests_fscnn -f ./Docker/Dockerfile_general .
 
 # ---------------------------------------------------------------------
 
