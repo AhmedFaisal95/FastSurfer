@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
          rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
 	 wget -qO- https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.1/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.1.tar.gz | tar zxv --no-same-owner -C /opt \
     	--exclude='freesurfer/trctrain' \
+        --exclude='freesurfer/subjects/fsaverage' \
     	--exclude='freesurfer/subjects/fsaverage_sym' \
     	--exclude='freesurfer/subjects/fsaverage3' \
     	--exclude='freesurfer/subjects/fsaverage4' \
@@ -39,9 +40,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     	--exclude='freesurfer/subjects/cvs_avg35_inMNI152' \
     	--exclude='freesurfer/subjects/bert' \
     	--exclude='freesurfer/subjects/V1_average' \
+        --exclude='freesurfer/subjects/rh.EC_average' \
+        --exclude='freesurfer/subjects/lh.EC_average' \
     	--exclude='freesurfer/average/mult-comp-cor' \
+        --exclude='freesurfer/average/aseg+spmhead+vermis+pons.ixi.gca' \
     	--exclude='freesurfer/lib/cuda' \
-    	--exclude='freesurfer/lib/qt'
+       --exclude='freesurfer/lib/qt' \
+        --exclude='freesurfer/matlab' \
+        --exclude='freesurfer/diffusion' \
+        --exclude='freesurfer/bin/freeview.bin' \
+        --exclude='freesurfer/bin/freeview' \
+        --exclude='freesurfer/bin/mris_decimate_gui.bin' \
+        --exclude='freesurfer/bin/mris_decimate_gui' \
+        --exclude='freesurfer/bin/qdec.bin' \
+        --exclude='freesurfer/bin/qdec' \
+        --exclude='freesurfer/bin/qdec_glmfit' \
+        --exclude='freesurfer/bin/SegmentSubfieldsT1Longitudinal' \
+        --exclude='freesurfer/bin/SegmentSubjectT1T2_autoEstimateAlveusML' \
+        --exclude='freesurfer/bin/SegmentSubjectT1_autoEstimateAlveusML' \
+        --exclude='freesurfer/bin/SegmentSubjectT2_autoEstimateAlveusML' \
+        --exclude='freesurfer/bin/fs_spmreg.glnxa64'
 
 # Install miniconda and needed python packages (for FastSurferCNN)
 RUN wget -qO ~/miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
