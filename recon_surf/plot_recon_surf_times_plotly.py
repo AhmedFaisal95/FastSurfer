@@ -264,6 +264,14 @@ if __name__ == "__main__":
     exemplary_subject_options = subject_options.copy()
     exemplary_subject_options.append({'label': 'None', 'value': 'None'})
 
+    # draw_debug_borders = True
+    draw_debug_borders = False
+
+
+    ##TODO: Add groove-style borders around main divs, with some padding around and maintaining
+    ## current distances between labels and elements
+    ## Use CSS: 'border-style': 'groove'
+
     ## Dash App Layout:
     ## ---------------------------------------------------------------------------
 
@@ -276,53 +284,76 @@ if __name__ == "__main__":
                         'color': None,
                     }),
 
-        html.Br(),
+        # html.Br(),
 
         html.Div([
-                html.Div(['Subjects:',
-                          dcc.Dropdown(
-                              id='subject_selection',
-                              options=subject_options,
-                              value=default_subject_dirs,
-                              multi=True),
+                html.Div([
+                          html.Label('Subjects:', style={'font-weight': 'bold'}),
+
+                          html.Div([
+                                    dcc.Dropdown(
+                                        id='subject_selection',
+                                        options=subject_options,
+                                        value=default_subject_dirs,
+                                        multi=True),
+                                    ], style={'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
+
                           html.Br(),
-                          'Exemplary Subject:',
-                          dcc.Dropdown(id='exemplary_subject_selection',
-                                       options=exemplary_subject_options,
-                                       value='None'),
+                          html.Label('Exemplary Subject:', style={'font-weight': 'bold'}),
+
+                          html.Div([
+                                    dcc.Dropdown(id='exemplary_subject_selection',
+                                                 options=exemplary_subject_options,
+                                                 value='None'),
+                                    ], style={'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
+
                           html.Br(),
+
+                          html.Label('Parameters:', style={'font-weight': 'bold'}),
                           html.Div([
                                     html.Div([
-                                            'Time threshold:',
-                                            dcc.Input(id='time_threshold',
-                                                      value=0, type='number'),
-                                            ], style={'margin-top': '5%'}),
-                                    html.Div([
-                                            'Plot top commands: ',
-                                            dcc.Input(id='top_x',
-                                                      value=0, type='number'),
-                                            ], style={'margin-top': '5%'}),
-                                    html.Div([
-                                        'Plot Type:',
-                                             dcc.RadioItems(
-                                              id='plot_type',
-                                                options=[
-                                                    {'label': 'Bar', 'value': 'Bar'},
-                                                    {'label': 'Box', 'value': 'Box'},
-                                                ],
-                                                value='Bar')
-                                            ], style={'width': '120%','margin-top': '20%'}),
-                                    html.Div([
-                                            html.Button(id='reset_state', n_clicks=0, children='Reset'),
-                                            ], style={'width': '100px','margin-top': '20%'}),
-                                    html.Div([
-                                            html.Button(id='reload_cmd_state', n_clicks=0, children='Reload Commands'),
-                                            ], style={'width': '80%','margin-top': '10%'}),
-                                    html.Div([
-                                            html.Button(id='load_all_subjs_state', n_clicks=0, children='Load All Subjects'),
-                                            ], style={'width': '80%','margin-top': '10%'}),
-                                    ], style={'display': 'flex', 'flexWrap': 'wrap', 'width': '20%'}),
-                            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%'}),
+                                              html.Div([
+                                                        html.Div([
+                                                                'Time threshold:',
+                                                                dcc.Input(id='time_threshold',
+                                                                          value=0, type='number'),
+                                                                ], style={'width': '80%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                        html.Div([
+                                                                'Plot top commands: ',
+                                                                dcc.Input(id='top_x',
+                                                                          value=0, type='number'),
+                                                                ], style={'margin-top': '2%','width': '80%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                        ], style={'display': 'inline-block', 'flexWrap': 'wrap','width': '50%', 'border':'2px black solid' if draw_debug_borders else None}),
+
+                                              html.Div([
+                                                  'Plot Type:',
+                                                       dcc.RadioItems(
+                                                        id='plot_type',
+                                                          options=[
+                                                              {'label': 'Bar', 'value': 'Bar'},
+                                                              {'label': 'Box', 'value': 'Box'},
+                                                          ],
+                                                          value='Bar')
+                                                       ], style={'display': 'inline-block', 'flexWrap': 'wrap', 'verticalAlign': 'top', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
+
+
+                                              ], style={'margin-top': '2%','width': '100%', 'border':'2px black solid' if draw_debug_borders else None}, className='row'),
+                                  html.Br(),
+
+                                  html.Label('Controls:', style={'font-weight': 'bold'}),
+                                  html.Div([
+                                            html.Div([
+                                                    html.Button(id='reset_state', n_clicks=0, children='Reset'),
+                                                    ], style={'width': None,'margin-top': '1%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                            html.Div([
+                                                    html.Button(id='reload_cmd_state', n_clicks=0, children='Reload Commands'),
+                                                    ], style={'width': None, 'margin-top': '1%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                            html.Div([
+                                                    html.Button(id='load_all_subjs_state', n_clicks=0, children='Load All Subjects'),
+                                                    ], style={'width': None,'margin-top': '1%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                          ], style={'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
+                                  ], style={'width': None, 'border':'2px black solid' if draw_debug_borders else None}),
+                            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
 
                 html.Div(['Commands:',
                           dcc.Dropdown(
@@ -330,7 +361,7 @@ if __name__ == "__main__":
                               options=cmd_multi_dropdown_options,
                               value=default_cmd_options,
                               multi=True),
-                          ], style={'width': '45%', 'display': 'inline-block',"verticalAlign": "top" }),
+                          ], style={'width': '45%', 'display': 'inline-block',"verticalAlign": "top" , 'border':'2px black solid' if draw_debug_borders else None}),
                 ], className='row'),
 
         html.Br(),
@@ -339,7 +370,7 @@ if __name__ == "__main__":
                 dcc.Graph(
                 id='recon-surf-times-plot',
                 figure=plotly.graph_objs.Figure()
-                )], style={ 'margin-right': '5%', 'margin-left': '15%'}),
+                )], style={'display': 'flex', 'justify-content':'center', 'border':'2px black solid' if draw_debug_borders else None}),
         ])
 
     @app.callback(
