@@ -193,7 +193,9 @@ def get_fig(df, exemplary_subject_selection, num_subjects):
                      tickfont={'size': None},
                      title=None,
                      automargin=True)
-    fig.update_yaxes(title='Time (m)' if exemplary_subject_selection is None else 'Percentage of exemplary subject: {}'.format(exemplary_subject_selection))
+
+    no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
+    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Percentage of exemplary subject: {}'.format(exemplary_subject_selection))
 
     return fig
 
@@ -220,7 +222,9 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects):
                      showgrid=True,
                      tickfont={'size': None},
                      title=None)
-    fig.update_yaxes(title='Time (m)' if exemplary_subject_selection is None else 'Percentage of exemplary subject: {}'.format(exemplary_subject_selection))
+
+    no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
+    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Percentage of exemplary subject: {}'.format(exemplary_subject_selection))
 
     return fig
 
@@ -420,7 +424,7 @@ if __name__ == "__main__":
 
         plotting_df = df.copy()
 
-        if exemplary_subject_selection != 'None':
+        if exemplary_subject_selection != 'None' and exemplary_subject_selection is not None:
             ## TODO: handle case for box plot, where computing means leads to loss of variance info
             ## but not doing so leads to non-unique cmd entries, which compute_comparison can not handle
             plotting_df = plotting_df.groupby('cmd_names', as_index=False).mean()
