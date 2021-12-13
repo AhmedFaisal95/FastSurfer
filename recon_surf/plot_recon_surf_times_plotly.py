@@ -349,15 +349,15 @@ if __name__ == "__main__":
                                   html.Label('Controls:', style={'font-weight': 'bold'}),
                                   html.Div([
                                             html.Div([
-                                                    html.Button(id='reset_state', n_clicks=0, children='Reset'),
-                                                    ], style={'width': None,'margin-top': '1%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                    html.Button(id='reset_state', n_clicks=0, children='Reset', style={'width': '100%', 'height':'100%'}),
+                                                    ], style={'display': 'inline-block', 'width': '31%', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None}),
                                             html.Div([
-                                                    html.Button(id='reload_cmd_state', n_clicks=0, children='Reload Commands'),
-                                                    ], style={'width': None, 'margin-top': '1%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                    html.Button(id='reload_cmd_state', n_clicks=0, children='Reload Cmds', style={'width': '100%', 'height':'100%'}),
+                                                    ], style={'display': 'inline-block','width': '31%', 'margin-left': '2%', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None}),
                                             html.Div([
-                                                    html.Button(id='load_all_subjs_state', n_clicks=0, children='Load All Subjects'),
-                                                    ], style={'width': None,'margin-top': '1%', 'border':'2px black solid' if draw_debug_borders else None}),
-                                          ], style={'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
+                                                    html.Button(id='load_all_subjs_state', n_clicks=0, children='Load All Subjects', style={'width': '100%', 'height':'100%'}),
+                                                    ], style={'display': 'inline-block','width': '31%',  'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None, 'height':'30px'}),
+                                            ], style={'width':'100%', 'flexWrap': 'wrap','display': 'inline-block', 'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
                                   ], style={'width': None, 'border':'2px black solid' if draw_debug_borders else None}),
                             ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
 
