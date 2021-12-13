@@ -195,7 +195,7 @@ def get_fig(df, exemplary_subject_selection, num_subjects):
                      automargin=True)
 
     no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
-    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Percentage of exemplary subject: {}'.format(exemplary_subject_selection))
+    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else '% of exemplary subject: {}'.format(exemplary_subject_selection))
 
     return fig
 
@@ -224,7 +224,7 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects):
                      title=None)
 
     no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
-    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Percentage of exemplary subject: {}'.format(exemplary_subject_selection))
+    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else '% of exemplary subject: {}'.format(exemplary_subject_selection))
 
     return fig
 
@@ -429,9 +429,9 @@ if __name__ == "__main__":
             ## but not doing so leads to non-unique cmd entries, which compute_comparison can not handle
             plotting_df = plotting_df.groupby('cmd_names', as_index=False).mean()
 
-            yaml_dicts = get_yaml_data(args.root_dir, [exemplary_subject_selection])
+            exemplary_yaml_dicts = get_yaml_data(args.root_dir, [exemplary_subject_selection])
 
-            cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times = get_nonunique_cmd_execution_times(yaml_dicts,
+            cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times = get_nonunique_cmd_execution_times(exemplary_yaml_dicts,
                                                                                                                    True, True)
             exemplary_df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times})
             exemplary_df = exemplary_df.groupby('cmd_names', as_index=False).mean()
