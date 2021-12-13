@@ -414,7 +414,7 @@ if __name__ == "__main__":
 
         if load_all_subjs_state == 1:
             subject_selection = all_subject_dirs
-            load_all_subjs_state = 1
+            load_all_subjs_state = 0
 
         yaml_dicts = get_yaml_data(args.root_dir, subject_selection)
 
