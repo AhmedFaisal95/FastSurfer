@@ -142,7 +142,9 @@ def compute_comparison(df, exemplary_df):
             continue
 
         cmd_time = row[cols[1]]
-        exemplary_cmd_time = exemplary_df.loc[exemplary_df.cmd_names == cmd_name, 'cmd_times'].values[0] + 1e-15
+        exemplary_cmd_time = exemplary_df.loc[exemplary_df.cmd_names == cmd_name, 'cmd_times'].values[0]
+        if exemplary_cmd_time == 0.0:
+            continue
         cmd_time_norm = cmd_time / exemplary_cmd_time
 
         rows_list.append([cmd_name, cmd_time_norm])
