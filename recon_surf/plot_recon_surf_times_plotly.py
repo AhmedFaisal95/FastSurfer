@@ -350,13 +350,13 @@ if __name__ == "__main__":
                                   html.Div([
                                             html.Div([
                                                     html.Button(id='reset_state', n_clicks=0, children='Reset', style={'width': '100%', 'height':'100%'}),
-                                                    ], style={'display': 'inline-block', 'width': '31%', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None}),
+                                                    ], style={'display': 'inline-block', 'width': '120px', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None}),
                                             html.Div([
                                                     html.Button(id='reload_cmd_state', n_clicks=0, children='Reload Cmds', style={'width': '100%', 'height':'100%'}),
-                                                    ], style={'display': 'inline-block','width': '31%', 'margin-left': '2%', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None}),
+                                                    ], style={'display': 'inline-block','width': '120px', 'margin-left': '2%', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None}),
                                             html.Div([
                                                     html.Button(id='load_all_subjs_state', n_clicks=0, children='Load All Subjects', style={'width': '100%', 'height':'100%'}),
-                                                    ], style={'display': 'inline-block','width': '31%',  'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None, 'height':'30px'}),
+                                                    ], style={'display': 'inline-block','width': '120px',  'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None, 'height':'30px'}),
                                             ], style={'width':'100%', 'flexWrap': 'wrap','display': 'inline-block', 'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
                                   ], style={'width': None, 'border':'2px black solid' if draw_debug_borders else None}),
                             ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
