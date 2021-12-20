@@ -24,7 +24,7 @@ matplotlib==3.1.1
     #   scikit-image
 networkx==2.5
     # via scikit-image
-nibabel==2.5.1
+nibabel==3.2.1
     # via -r requirements.in
 numpy==1.17.4
     # via
@@ -37,13 +37,17 @@ numpy==1.17.4
     #   scipy
     #   torch
     #   torchvision
+packaging==21.3
+    # via nibabel
 pillow==8.3.2
     # via
     #   imageio
     #   scikit-image
     #   torchvision
 pyparsing==2.4.7
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   packaging
 python-dateutil==2.8.2
     # via
     #   -r requirements.in
@@ -62,7 +66,6 @@ six==1.15.0
     # via
     #   cycler
     #   h5py
-    #   nibabel
     #   python-dateutil
     #   torchvision
 torch===1.2.0
