@@ -217,6 +217,7 @@ def conform(img, order=1):
     """
     from nibabel.freesurfer.mghformat import MGHHeader
 
+    ## global?
     cwidth = 256
     csize = 1
     h1 = MGHHeader.from_header(img.header)  # may copy some parameters if input was MGH format

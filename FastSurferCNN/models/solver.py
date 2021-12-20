@@ -203,6 +203,7 @@ class Solver(object):
     """
 
     # gamma is the factor for lowering the lr and step_size is when it gets lowered
+    ## global?
     default_lr_scheduler_args = {"gamma": 0.3,
                                  "step_size": 5}
 

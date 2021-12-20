@@ -267,6 +267,7 @@ def fastsurfercnn(img_filename, save_as, use_cuda, gpu_small, logger, args):
     header_info, affine_info, orig_data = load_and_conform_image(img_filename, interpol=1, logger=logger)
 
     # Set up model for axial and coronal networks
+    ## kernel_c, kernel_d global?
     params_network = {'num_channels': args.num_channels, 'num_filters': args.num_filters,
                       'kernel_h': args.kernel_height, 'kernel_w': args.kernel_width,
                       'stride_conv': args.stride, 'pool': args.pool,
@@ -298,6 +299,7 @@ def fastsurfercnn(img_filename, save_as, use_cuda, gpu_small, logger, args):
 
     # Set up tensor to hold probabilities
     if not gpu_small:
+        ## (256, 256, 256) global?
         pred_prob = torch.zeros((256, 256, 256, args.num_classes_ax_cor), dtype=torch.float).to(device)
 
     else:
@@ -356,6 +358,7 @@ def fastsurfercnn(img_filename, save_as, use_cuda, gpu_small, logger, args):
     centroid_rh = np.asarray(rh_wm[0].centroid)
     centroid_lh = np.asarray(lh_wm[0].centroid)
 
+    ## global?
     labels_list = np.array([1003, 1006, 1007, 1008, 1009, 1011,
                             1015, 1018, 1019, 1020, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1034, 1035])
 
@@ -380,6 +383,7 @@ def fastsurfercnn(img_filename, save_as, use_cuda, gpu_small, logger, args):
                             axis=3)
 
     # Problematic classes: 1026, 1011, 1029, 1019
+    ## global?
     for prob_class_lh in [1011, 1019, 1026, 1029]:
         prob_class_rh = prob_class_lh + 1000
         mask_lh = ((pred_prob == prob_class_lh) | (pred_prob == prob_class_rh)) & (lh_rh_split == 0)
@@ -391,6 +395,7 @@ def fastsurfercnn(img_filename, save_as, use_cuda, gpu_small, logger, args):
     # Clean-Up
     if args.cleanup is True:
 
+        ## global?
         labels = [2, 4, 5, 7, 8, 10, 11, 12, 13, 14,
                   15, 16, 17, 18, 24, 26, 28, 31, 41, 43, 44,
                   46, 47, 49, 50, 51, 52, 53, 54, 58, 60, 63,

@@ -34,6 +34,7 @@ class DiceLoss(_Loss):
         :param int ignore_index: ignore label with index x in the loss calculation
         :return:
         """
+        ## global?
         eps = 0.001
 
         encoded_target = output.detach() * 0

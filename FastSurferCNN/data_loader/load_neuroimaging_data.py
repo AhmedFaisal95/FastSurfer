@@ -239,6 +239,7 @@ def map_aparc_aseg2label(aseg, aseg_nocc=None):
     :param None/np.ndarray aseg_nocc: ground truth aseg without corpus callosum segmentation
     :return:
     """
+    ## label maps global?
     aseg_temp = aseg.copy()
     aseg[aseg == 80] = 77  # Hypointensities Class
     aseg[aseg == 85] = 0  # Optic Chiasma to BKG
@@ -371,6 +372,7 @@ def map_prediction_sagittal2full(prediction_sag, num_classes=79):
     :param int num_classes: number of classes (96 for full classes, 79 for hemi split)
     :return: Remapped prediction
     """
+    ## global?
     if num_classes == 96:
         idx_list = np.asarray([0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1, 2, 3, 14, 15, 4, 16,
                                17, 18, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,

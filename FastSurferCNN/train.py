@@ -176,6 +176,7 @@ def train():
     validation_dataloader = DataLoader(dataset=dataset_validation, batch_size=args.validation_batch_size, shuffle=True)
 
     # Set up network
+    ## kernel_c, kernel_d global?
     params_network = {'num_channels': args.num_channels, 'num_filters': args.num_filters,
                       'kernel_h': args.kernel_height, 'kernel_w': args.kernel_width, 'stride_conv': args.stride,
                       'pool': args.pool, 'stride_pool': args.stride_pool, 'num_classes': args.num_classes,
@@ -199,6 +200,7 @@ def train():
         curr_labels = CLASS_NAMES
 
     # optimizer selection
+    ## constant optim params global?
     if args.optim == "sgd":
         optim = torch.optim.SGD
 
