@@ -45,7 +45,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     	--exclude='freesurfer/average/mult-comp-cor' \
         --exclude='freesurfer/average/aseg+spmhead+vermis+pons.ixi.gca' \
     	--exclude='freesurfer/lib/cuda' \
-       --exclude='freesurfer/lib/qt' \
+        --exclude='freesurfer/lib/qt' \
         --exclude='freesurfer/matlab' \
         --exclude='freesurfer/diffusion' \
         --exclude='freesurfer/bin/freeview.bin' \
@@ -59,7 +59,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         --exclude='freesurfer/bin/SegmentSubjectT1T2_autoEstimateAlveusML' \
         --exclude='freesurfer/bin/SegmentSubjectT1_autoEstimateAlveusML' \
         --exclude='freesurfer/bin/SegmentSubjectT2_autoEstimateAlveusML' \
-        --exclude='freesurfer/bin/fs_spmreg.glnxa64'
+        --exclude='freesurfer/bin/fs_spmreg.glnxa64' \
+        --exclude='freesurfer/bin/surf2vol' \
+        --exclude='freesurfer/MCRv80'
 
 # Install miniconda and needed python packages (for FastSurferCNN)
 RUN wget -qO ~/miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
