@@ -56,6 +56,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         --exclude='freesurfer/bin/qdec' \
         --exclude='freesurfer/bin/qdec_glmfit' \
         --exclude='freesurfer/bin/SegmentSubfieldsT1Longitudinal' \
+        --exclude='freesurfer/bin/SegmentSubject' \
         --exclude='freesurfer/bin/SegmentSubjectT1T2_autoEstimateAlveusML' \
         --exclude='freesurfer/bin/SegmentSubjectT1_autoEstimateAlveusML' \
         --exclude='freesurfer/bin/SegmentSubjectT2_autoEstimateAlveusML' \
