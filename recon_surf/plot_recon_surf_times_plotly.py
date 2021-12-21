@@ -171,13 +171,12 @@ def update_data(fig, df):
     return fig
 
 def get_fig(df, exemplary_subject_selection, num_subjects):
-    ##TODO: Add manual plotting of error bars
     fig = px.histogram(df, x='cmd_names', y='cmd_times',
-                        color='Side', barmode='group', histfunc='avg',
-                        color_discrete_map={'lh': plotly_colors[4],
-                                            'full': plotly_colors[0],
-                                            'rh': plotly_colors[2]},
-                        )
+                       color='Side', barmode='group', histfunc='avg',
+                       color_discrete_map={'lh': plotly_colors[4],
+                                           'full': plotly_colors[0],
+                                           'rh': plotly_colors[2]},
+                       )
 
     fig.update_layout(
         title_text='recon-surf Command Execution Times (Average over {} runs)'.format(num_subjects),
@@ -201,14 +200,45 @@ def get_fig(df, exemplary_subject_selection, num_subjects):
 
     return fig
 
+def get_bar_fig(df, exemplary_subject_selection, num_subjects):
+    means_df = df.groupby(['cmd_names', 'Side'], as_index=False).mean()
+    stds_df = df.groupby(['cmd_names', 'Side'], as_index=False).std()
+
+    fig = px.bar(means_df, x='cmd_names', y='cmd_times',
+                 color='Side', barmode='group',
+                 color_discrete_map={'lh': plotly_colors[4],
+                                     'full': plotly_colors[0],
+                                     'rh': plotly_colors[2]},
+                 error_y=stds_df['cmd_times'].values.tolist(),
+                 )
+
+    fig.update_layout(
+        title_text='recon-surf Command Execution Times (Average over {} runs)'.format(num_subjects),
+        template='seaborn',
+        width=1200, height=800,
+        legend=dict(title=None, orientation="h", y=1,
+                    yanchor="bottom", x=0.5, xanchor="center"
+        )
+    )
+    fig.update_xaxes(categoryorder='mean ascending',
+                     tickangle=280,
+                     showgrid=True,
+                     tickfont={'size': None},
+                     title=None)
+
+    no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
+    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else '% of exemplary subject: {}'.format(exemplary_subject_selection))
+
+    return fig
+
 def get_box_fig(df, exemplary_subject_selection, num_subjects):
     ##TODO: debug issue of tiny bars (only here in script, not in ipynb)
     fig = px.box(df, x='cmd_names', y='cmd_times',
-                  color='Side',
-                  color_discrete_map={'lh': plotly_colors[4],
-                                      'full': plotly_colors[0],
-                                      'rh': plotly_colors[2]},
-                  points='all'
+                 color='Side',
+                 color_discrete_map={'lh': plotly_colors[4],
+                                     'full': plotly_colors[0],
+                                     'rh': plotly_colors[2]},
+                 points='all'
                  )
 
     fig.update_layout(
@@ -338,6 +368,7 @@ if __name__ == "__main__":
                                                           options=[
                                                               {'label': 'Bar', 'value': 'Bar'},
                                                               {'label': 'Box', 'value': 'Box'},
+                                                              {'label': 'Bar (error bounds)', 'value': 'Bar_2'},
                                                           ],
                                                           value='Bar')
                                                        ], style={'display': 'inline-block', 'flexWrap': 'wrap', 'verticalAlign': 'top', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
@@ -469,8 +500,10 @@ if __name__ == "__main__":
 
         if plot_type == 'Bar':
             fig = get_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
-        if plot_type == 'Box':
+        elif plot_type == 'Box':
             fig = get_box_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
+        elif plot_type == 'Bar_2':
+            fig = get_bar_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
 
         cmd_options = np.unique(plotting_df['cmd_names'].values).tolist()
         new_cmd_multi_dropdown_options = [{'label': cmd_name, 'value': cmd_name} for cmd_name in cmd_options]
