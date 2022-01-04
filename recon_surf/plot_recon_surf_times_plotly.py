@@ -98,7 +98,7 @@ def get_yaml_data(root_dir, subject_dirs):
     for subject_dir in subject_dirs:
         if not os.path.isdir(os.path.join(root_dir, subject_dir)):
             continue
-        file_path = os.path.join(root_dir, subject_dir, 'scripts/recon_surf_times.log'),
+        file_path = os.path.join(root_dir, subject_dir, 'scripts/recon-surf_times.yaml'),
         print('  - {}'.format(file_path[0]))
         try:
             with open(file_path[0], 'r') as stream:
