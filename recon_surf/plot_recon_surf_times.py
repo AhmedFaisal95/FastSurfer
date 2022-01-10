@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     print('[INFO] Processing data from the files:')
     for subject_dir in args.subject_dirs:
-        file_path = os.path.join(args.root_dir, subject_dir, 'scripts/recon_surf_times.log'),
+        file_path = os.path.join(args.root_dir, subject_dir, 'scripts/recon-surf_times.yaml'),
         print('  - {}'.format(file_path[0]))
         try:
             with open(file_path[0], 'r') as stream:
