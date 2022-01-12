@@ -20,12 +20,14 @@ from dash.dependencies import Input, Output
 plotly_colors = px.colors.qualitative.Plotly
 
 
-def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=False, return_recon_all_info=True):
+def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True, return_recon_all_info=True):
     cmd_names = []
     cmd_times = []
     if return_recon_all_info:
         recon_all_stage_names = []
         recon_all_stage_times = []
+
+    sides_list = []
 
     for yaml_dict in yaml_dicts:
         for stage_num in range(len(yaml_dict['recon-surf_commands'])):
@@ -55,35 +57,49 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=False, 
                             elif 'duration_s' in stage_dict.keys():
                                 recon_all_stage_times.append(stage_dict['duration_s'])
 
+                        if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
+                            sides_list.append('lh')
+                        elif any(rh_str in cmd_entry['cmd'] for rh_str in ['rh', '127 ']):
+                            sides_list.append('rh')
+                        else:
+                            sides_list.append('full')
+
                 else:
                     ## If python3 script, get script name:
                     if 'python3' in cmd_entry['cmd'].split(' ')[0]:
                         cmd_names.append(cmd_entry['cmd'].split(' ')[1].split('/')[-1])
                     else:
                         cmd_names.append(cmd_entry['cmd'].split(' ')[0])
+
                     if 'duration_m' in cmd_entry.keys():
                         cmd_times.append(cmd_entry['duration_m'])
                     elif 'duration_s' in cmd_entry.keys():
                         cmd_times.append(cmd_entry['duration_s'])
 
-    return cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times
+                    if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
+                        sides_list.append('lh')
+                    elif any(rh_str in cmd_entry['cmd'] for rh_str in ['rh', '127 ']):
+                        sides_list.append('rh')
+                    else:
+                        sides_list.append('full')
 
-def separate_hemis(filtered_df):
+    return cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times, sides_list
+
+def separate_hemis(filtered_df, sides_list):
     cols = filtered_df.columns.values.tolist()
     cols.append('Side')
     rows_list = []
         
     for index, row in filtered_df.iterrows():
-        side = 'full'
         cmd_name = row[cols[0]]
         cmd_time = row[cols[1]]
+        side = sides_list[index]
 
-        if 'lh' in cmd_name:
-            side = 'lh'
-            cmd_name = cmd_name.replace('lh', '')
-        if 'rh' in cmd_name:
-            side = 'rh'
-            cmd_name = cmd_name.replace('rh', '')
+        if 'recon-all' in cmd_name:
+            if 'lh' in cmd_name:
+                cmd_name = cmd_name.replace('lh', '')
+            if 'rh' in cmd_name:
+                cmd_name = cmd_name.replace('rh', '')
 
         rows_list.append([cmd_name, cmd_time, side])
         
@@ -141,17 +157,28 @@ def compute_comparison(df, exemplary_df):
         if cmd_name not in exemplary_df.cmd_names.values:
             continue
 
-        cmd_time = row[cols[1]]
-        exemplary_cmd_time = exemplary_df.loc[exemplary_df.cmd_names == cmd_name, 'cmd_times'].values[0]
+        cmd_time = row[cols[2]]
+        side = row[cols[1]]
+
+        try:
+            exemplary_cmd_time = exemplary_df[(exemplary_df.cmd_names == cmd_name) & \
+                                              (exemplary_df.Side == side)]['cmd_times'].item()
+        except ValueError as e:
+            print(e)
+            print('In compute_comparison: Found more than one element satisfying the given condition ' \
+                  'within exemplary subject dataframe!' \
+                  'Command name = {}\nSide = {}\n'.format(cmd_name, side) + \
+                  'This may indicate mistake in the input dataframes.')
+
         if exemplary_cmd_time == 0.0:
             continue
         cmd_time_norm = cmd_time / exemplary_cmd_time
 
-        rows_list.append([cmd_name, cmd_time_norm])
+        rows_list.append([cmd_name, side, cmd_time_norm])
 
-    filtered_df = pd.DataFrame(rows_list, columns=cols)
+    comparison_df = pd.DataFrame(rows_list, columns=cols)
 
-    return filtered_df
+    return comparison_df
 
 def update_data(fig, df):
     temp = px.histogram(df, x='cmd_names', y='cmd_times',
@@ -278,14 +305,12 @@ if __name__ == "__main__":
 
     yaml_dicts = get_yaml_data(args.root_dir, all_subject_dirs)
 
-    cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times = get_nonunique_cmd_execution_times(yaml_dicts,
+    cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts,
                                                                                                            True, True)
 
     df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times})
-    df = df.groupby('cmd_names', as_index=False).mean()
-
-    base_df = df.copy()
-    base_df = separate_hemis(base_df)
+    base_df = separate_hemis(df, sides_list)
+    base_df = base_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
     base_df = enforce_custom_side_order(base_df)
 
     default_cmd_options = np.unique(base_df['cmd_names'].values).tolist()
@@ -350,7 +375,7 @@ if __name__ == "__main__":
                                     html.Div([
                                               html.Div([
                                                         html.Div([
-                                                                'Time threshold:',
+                                                                'Time threshold: ',
                                                                 dcc.Input(id='time_threshold',
                                                                           value=0, type='number'),
                                                                 ], style={'width': '80%', 'border':'2px black solid' if draw_debug_borders else None}),
@@ -451,29 +476,30 @@ if __name__ == "__main__":
 
         yaml_dicts = get_yaml_data(args.root_dir, subject_selection)
 
-        orig_cmd_names, orig_cmd_times, recon_all_stage_names, recon_all_stage_times = get_nonunique_cmd_execution_times(yaml_dicts,
+        orig_cmd_names, orig_cmd_times, recon_all_stage_names, recon_all_stage_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts,
                                                                                                            True, True)
         df = pd.DataFrame({'cmd_names': orig_cmd_names, 'cmd_times': orig_cmd_times})
 
         plotting_df = df.copy()
+        plotting_df = separate_hemis(plotting_df, sides_list)
 
         if exemplary_subject_selection != 'None' and exemplary_subject_selection is not None:
             ## TODO: handle case for box plot, where computing means leads to loss of variance info
             ## but not doing so leads to non-unique cmd entries, which compute_comparison can not handle
-            plotting_df = plotting_df.groupby('cmd_names', as_index=False).mean()
+            plotting_df = plotting_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
 
             exemplary_yaml_dicts = get_yaml_data(args.root_dir, [exemplary_subject_selection])
 
-            cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times = get_nonunique_cmd_execution_times(exemplary_yaml_dicts,
+            cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times, sides_list = get_nonunique_cmd_execution_times(exemplary_yaml_dicts,
                                                                                                                    True, True)
             exemplary_df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times})
-            exemplary_df = exemplary_df.groupby('cmd_names', as_index=False).mean()
+            exemplary_df = separate_hemis(exemplary_df, sides_list)
+            exemplary_df = exemplary_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
 
             plotting_df = compute_comparison(plotting_df, exemplary_df)
 
             disable_time_threshold_option = True
 
-        plotting_df = separate_hemis(plotting_df)
         plotting_df = enforce_custom_side_order(plotting_df)
 
         ## Selected cmds:
