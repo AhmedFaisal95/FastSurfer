@@ -56,8 +56,8 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=False, 
                                 recon_all_stage_times.append(stage_dict['duration_s'])
 
                 else:
-                    ## If python3.8, get script name:
-                    if cmd_entry['cmd'].split(' ')[0] == 'python3.8':
+                    ## If python3 script, get script name:
+                    if 'python3' in cmd_entry['cmd'].split(' ')[0]:
                         cmd_names.append(cmd_entry['cmd'].split(' ')[1].split('/')[-1])
                     else:
                         cmd_names.append(cmd_entry['cmd'].split(' ')[0])
