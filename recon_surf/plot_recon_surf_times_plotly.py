@@ -288,6 +288,17 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects):
     return fig
 
 
+def get_top_x_cmds(plotting_df, x):
+    increasing_avgs_df = plotting_df.groupby('cmd_names').mean()['cmd_times'].sort_values()
+    top_avgs_df = increasing_avgs_df[-x:]
+    bottom_avgs_df = increasing_avgs_df[:-x]
+
+    for cmd_name in bottom_avgs_df.keys():
+        plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_names == cmd_name].index)
+
+    return plotting_df
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-r','--root_dir', type=str, default='.',    
@@ -514,12 +525,7 @@ if __name__ == "__main__":
 
         ## Top x cmds:
         if top_x is not None and top_x != 0:
-            increasing_avgs_df = plotting_df.groupby('cmd_names').mean()['cmd_times'].sort_values()
-            top_avgs_df = increasing_avgs_df[-top_x:]
-            bottom_avgs_df = increasing_avgs_df[:-top_x]
-
-            for cmd_name in bottom_avgs_df.keys():
-                plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_names == cmd_name].index)
+            plotting_df = get_top_x_cmds(plotting_df, top_x)
 
         ## Time threshold:
         plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_times < time_threshold].index)
