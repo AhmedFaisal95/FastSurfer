@@ -20,13 +20,9 @@ from dash.dependencies import Input, Output
 plotly_colors = px.colors.qualitative.Plotly
 
 
-def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True, return_recon_all_info=True):
+def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
     cmd_names = []
     cmd_times = []
-    if return_recon_all_info:
-        recon_all_stage_names = []
-        recon_all_stage_times = []
-
     sides_list = []
 
     for yaml_dict in yaml_dicts:
@@ -49,13 +45,6 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True, r
                                 cmd_times.append(stage_dict['duration_m'])
                             elif 'duration_s' in stage_dict.keys():
                                 cmd_times.append(stage_dict['duration_s'])
-
-                        if return_recon_all_info:
-                            recon_all_stage_names.append(stage_dict['stage_name'])
-                            if 'duration_m' in stage_dict.keys():
-                                recon_all_stage_times.append(stage_dict['duration_m'])
-                            elif 'duration_s' in stage_dict.keys():
-                                recon_all_stage_times.append(stage_dict['duration_s'])
 
                         if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
                             sides_list.append('lh')
@@ -83,7 +72,7 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True, r
                     else:
                         sides_list.append('full')
 
-    return cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times, sides_list
+    return cmd_names, cmd_times, sides_list
 
 def separate_hemis(filtered_df, sides_list):
     cols = filtered_df.columns.values.tolist()
@@ -329,8 +318,7 @@ if __name__ == "__main__":
 
     yaml_dicts = get_yaml_data(args.root_dir, all_subject_dirs)
 
-    cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts,
-                                                                                                           True, True)
+    cmd_names, cmd_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts, True)
 
     df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times})
     base_df = separate_hemis(df, sides_list)
@@ -500,8 +488,7 @@ if __name__ == "__main__":
 
         yaml_dicts = get_yaml_data(args.root_dir, subject_selection)
 
-        orig_cmd_names, orig_cmd_times, recon_all_stage_names, recon_all_stage_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts,
-                                                                                                           True, True)
+        orig_cmd_names, orig_cmd_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts)
         df = pd.DataFrame({'cmd_names': orig_cmd_names, 'cmd_times': orig_cmd_times})
 
         plotting_df = df.copy()
@@ -514,8 +501,7 @@ if __name__ == "__main__":
 
             exemplary_yaml_dicts = get_yaml_data(args.root_dir, [exemplary_subject_selection])
 
-            cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times, sides_list = get_nonunique_cmd_execution_times(exemplary_yaml_dicts,
-                                                                                                                   True, True)
+            cmd_names, cmd_times, sides_list = get_nonunique_cmd_execution_times(exemplary_yaml_dicts)
             exemplary_df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times})
             exemplary_df = separate_hemis(exemplary_df, sides_list)
             exemplary_df = exemplary_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
