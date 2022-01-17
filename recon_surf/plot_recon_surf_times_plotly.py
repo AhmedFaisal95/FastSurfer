@@ -287,13 +287,26 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects):
 
     return fig
 
-
 def get_top_x_cmds(plotting_df, x):
-    increasing_avgs_df = plotting_df.groupby('cmd_names').mean()['cmd_times'].sort_values()
-    top_avgs_df = increasing_avgs_df[-x:]
-    bottom_avgs_df = increasing_avgs_df[:-x]
+    means_df = plotting_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
+    means_df = means_df.loc[means_df['cmd_times'] == means_df['cmd_times']]   ## Remove NaN entries produced by groupby
 
-    for cmd_name in bottom_avgs_df.keys():
+    ordered_means_df = means_df.loc[reversed(means_df['cmd_times'].sort_values().index)]
+    top_unique_cmds = []
+    counter = 0
+
+    for index, row in ordered_means_df.iterrows():
+        cmd_name = row['cmd_names']
+        if cmd_name not in top_unique_cmds:
+            top_unique_cmds.append(cmd_name)
+            counter += 1
+
+        if counter == x:
+            break
+
+    excluded_cmds = [cmd_name for cmd_name in np.unique(means_df.cmd_names.values).tolist() if cmd_name not in top_unique_cmds]
+
+    for cmd_name in excluded_cmds:
         plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_names == cmd_name].index)
 
     return plotting_df
