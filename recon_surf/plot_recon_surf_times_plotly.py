@@ -87,8 +87,12 @@ def separate_hemis(filtered_df, sides_list):
         if 'recon-all' in cmd_name:
             if 'lh' in cmd_name:
                 cmd_name = cmd_name.replace('lh', '')
+                if cmd_name[-1] == ' ':
+                    cmd_name = cmd_name[:-1]
             if 'rh' in cmd_name:
                 cmd_name = cmd_name.replace('rh', '')
+                if cmd_name[-1] == ' ':
+                    cmd_name = cmd_name[:-1]
 
         rows_list.append([cmd_name, cmd_time, side])
         
@@ -103,10 +107,10 @@ def get_yaml_data(root_dir, subject_dirs):
     for subject_dir in subject_dirs:
         if not os.path.isdir(os.path.join(root_dir, subject_dir)):
             continue
-        file_path = os.path.join(root_dir, subject_dir, 'scripts/recon-surf_times.yaml'),
-        print('  - {}'.format(file_path[0]))
+        file_path = os.path.join(root_dir, subject_dir, 'scripts/recon-surf_times.yaml')
+        print('  - {}'.format(file_path))
         try:
-            with open(file_path[0], 'r') as stream:
+            with open(file_path, 'r') as stream:
                 try:
                     yaml_dicts.append(yaml.safe_load(stream))
                 except yaml.YAMLError as e:
@@ -117,7 +121,7 @@ def get_yaml_data(root_dir, subject_dirs):
             print('[INFO] Skipping this file...')
 
     if len(yaml_dicts) == 0:
-        print('[ERROR] No data could be read for processing! Exiting')
+        print('[ERROR] No data could be read for processing')
 
     return yaml_dicts
 
