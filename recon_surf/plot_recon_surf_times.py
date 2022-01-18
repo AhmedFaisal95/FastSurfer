@@ -12,12 +12,10 @@ import matplotlib.pyplot as plt
 
 tab10_color_palette_ = sns.color_palette('tab10', 10)
 
-def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=False, return_recon_all_info=True):
+def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
     cmd_names = []
     cmd_times = []
-    if return_recon_all_info:
-        recon_all_stage_names = []
-        recon_all_stage_times = []
+    sides_list = []
 
     for yaml_dict in yaml_dicts:
         for stage_num in range(len(yaml_dict['recon-surf_commands'])):
@@ -40,42 +38,53 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=False, 
                             elif 'duration_s' in stage_dict.keys():
                                 cmd_times.append(stage_dict['duration_s'])
 
-                        if return_recon_all_info:
-                            recon_all_stage_names.append(stage_dict['stage_name'])
-                            if 'duration_m' in stage_dict.keys():
-                                recon_all_stage_times.append(stage_dict['duration_m'])
-                            elif 'duration_s' in stage_dict.keys():
-                                recon_all_stage_times.append(stage_dict['duration_s'])
+                        if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
+                            sides_list.append('lh')
+                        elif any(rh_str in cmd_entry['cmd'] for rh_str in ['rh', '127 ']):
+                            sides_list.append('rh')
+                        else:
+                            sides_list.append('full')
 
                 else:
-                    ## If python3.8, get script name:
-                    if cmd_entry['cmd'].split(' ')[0] == 'python3.8':
+                    ## If python3 script, get script name:
+                    if 'python3' in cmd_entry['cmd'].split(' ')[0]:
                         cmd_names.append(cmd_entry['cmd'].split(' ')[1].split('/')[-1])
                     else:
                         cmd_names.append(cmd_entry['cmd'].split(' ')[0])
+
                     if 'duration_m' in cmd_entry.keys():
                         cmd_times.append(cmd_entry['duration_m'])
                     elif 'duration_s' in cmd_entry.keys():
                         cmd_times.append(cmd_entry['duration_s'])
 
-    return cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times
+                    if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
+                        sides_list.append('lh')
+                    elif any(rh_str in cmd_entry['cmd'] for rh_str in ['rh', '127 ']):
+                        sides_list.append('rh')
+                    else:
+                        sides_list.append('full')
 
-def separate_hemis(filtered_df):
+    return cmd_names, cmd_times, sides_list
+
+def separate_hemis(filtered_df, sides_list):
     cols = filtered_df.columns.values.tolist()
     cols.append('Side')
     rows_list = []
 
     for index, row in filtered_df.iterrows():
-        side = 'full'
         cmd_name = row[cols[0]]
         cmd_time = row[cols[1]]
+        side = sides_list[index]
 
-        if 'lh' in cmd_name:
-            side = 'lh'
-            cmd_name = cmd_name.replace('lh', '')
-        if 'rh' in cmd_name:
-            side = 'rh'
-            cmd_name = cmd_name.replace('rh', '')
+        if 'recon-all' in cmd_name:
+            if 'lh' in cmd_name:
+                cmd_name = cmd_name.replace('lh', '')
+                if cmd_name[-1] == ' ':
+                    cmd_name = cmd_name[:-1]
+            if 'rh' in cmd_name:
+                cmd_name = cmd_name.replace('rh', '')
+                if cmd_name[-1] == ' ':
+                    cmd_name = cmd_name[:-1]
 
         rows_list.append([cmd_name, cmd_time, side])
 
@@ -83,73 +92,35 @@ def separate_hemis(filtered_df):
 
     return two_sided_filtered_df
 
-def plot_bar(df, separate_hemis=True):
-    if not separate_hemis:
-        sns.barplot(x='cmd_names', y='cmd_times', data=df,
-                    order=df.groupby('cmd_names').mean()['cmd_times'].sort_values().index,
-                    ci='sd', capsize=.2)
-    else:
-        sns.barplot(x='cmd_names', y='cmd_times', data=df,
-                    order=df.groupby('cmd_names').mean()['cmd_times'].sort_values().index,
-                    hue='Side', ci='sd', capsize=.1,
-                    palette={'lh': tab10_color_palette_[1],
-                             'full': tab10_color_palette_[0],
-                             'rh': tab10_color_palette_[2]},
-                    hue_order=['lh', 'full', 'rh'])
+def plot_bar(df):
+    sns.barplot(x='cmd_names', y='cmd_times', data=df,
+                order=df.groupby('cmd_names').mean()['cmd_times'].sort_values().index,
+                hue='Side', ci='sd', capsize=.1,
+                palette={'lh': tab10_color_palette_[1],
+                         'full': tab10_color_palette_[0],
+                         'rh': tab10_color_palette_[2]},
+                hue_order=['lh', 'full', 'rh'])
 
+def plot_box(df):
+    sns.boxplot(x='cmd_names', y='cmd_times', data=df,
+                order=df.groupby('cmd_names').mean()['cmd_times'].sort_values().index,
+                hue='Side',
+                palette={'lh': tab10_color_palette_[1],
+                         'full': tab10_color_palette_[0],
+                         'rh': tab10_color_palette_[2]},
+                hue_order=['lh', 'full', 'rh'])
 
-def plot_box(df, separate_hemis=True):
-    if not separate_hemis:
-        sns.boxplot(x='cmd_names', y='cmd_times', data=df,
-                    order=df.groupby('cmd_names').mean()['cmd_times'].sort_values().index)
-    else:
-        sns.boxplot(x='cmd_names', y='cmd_times', data=df,
-                    order=df.groupby('cmd_names').mean()['cmd_times'].sort_values().index,
-                    hue='Side',
-                    palette={'lh': tab10_color_palette_[1],
-                             'full': tab10_color_palette_[0],
-                             'rh': tab10_color_palette_[2]},
-                    hue_order=['lh', 'full', 'rh'])
-
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-r','--root_dir', type=str,
-                        default='.', help='Root directory containing subject directories')
-    parser.add_argument('-s','--subject_dirs', nargs='+',
-                        help='Directories of subjects to plot for', default=[])
-    parser.add_argument('-p','--plot_type', type=str, default='bar',
-                        help='One of [\'bar\',\'box\']')
-    parser.add_argument('--top_cmds', type=int, default=None,
-                        help='If given, only the cmds with the x highest execution times are plotted')
-    parser.add_argument('--select_cmds', nargs='+', default=None,
-                        help='If given, only the listed cmds are plotted')
-    parser.add_argument('-t', '--time_threshold', type=float, default=None,
-                        help='If given, only the cmds whose execution times exceed t are plotted')
-    parser.add_argument('--fig_save_dir', type=str,
-                        default='/tmp', help='Directory in which plot images are to be saved')
-    parser.add_argument('--save_fig', dest='save_fig', action='store_true')
-    parser.add_argument('--plot_recon_all_stages', dest='plot_recon_all_stages', action='store_true')
-    parser.add_argument('--separate_hemis', dest='separate_hemis', action='store_true')
-    parser.set_defaults(save_fig=False, plot_recon_all_stages=False, separate_hemis=False)
-
-    args = parser.parse_args()
-
-    if not args.subject_dirs:
-        print('[INFO] Subject list not specified. Including all data in root_dir...')
-        subject_dirs = os.listdir(args.root_dir)
-    else:
-        subject_dirs = args.subject_dirs
-
+def get_yaml_data(root_dir, subject_dirs):
     yaml_dicts = []
 
-    print('[INFO] Processing data from the files:')
+    print('[INFO] Extracting data from the files:')
     for subject_dir in subject_dirs:
-        file_path = os.path.join(args.root_dir, subject_dir, 'scripts/recon-surf_times.yaml'),
-        print('  - {}'.format(file_path[0]))
+        if not os.path.isdir(os.path.join(root_dir, subject_dir)):
+            continue
+        file_path = os.path.join(root_dir, subject_dir, 'scripts/recon-surf_times.yaml')
+        print('  - {}'.format(file_path))
         try:
-            with open(file_path[0], 'r') as stream:
+            with open(file_path, 'r') as stream:
                 try:
                     yaml_dicts.append(yaml.safe_load(stream))
                 except yaml.YAMLError as e:
@@ -163,26 +134,78 @@ if __name__ == "__main__":
         print('[ERROR] No data could be read for processing! Exiting')
         sys.exit()
 
+    return yaml_dicts
+
+def get_top_x_cmds(plotting_df, x):
+    means_df = plotting_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
+    means_df = means_df.loc[means_df['cmd_times'] == means_df['cmd_times']]   ## Remove NaN entries produced by groupby
+
+    ordered_means_df = means_df.loc[reversed(means_df['cmd_times'].sort_values().index)]
+    top_unique_cmds = []
+    counter = 0
+
+    for index, row in ordered_means_df.iterrows():
+        cmd_name = row['cmd_names']
+        if cmd_name not in top_unique_cmds:
+            top_unique_cmds.append(cmd_name)
+            counter += 1
+
+        if counter == x:
+            break
+
+    print('[INFO] Plotting only top {} commands:'.format(x))
+    print(' - ' + '\n - '.join(top_unique_cmds))
+
+    excluded_cmds = [cmd_name for cmd_name in np.unique(means_df.cmd_names.values).tolist() if cmd_name not in top_unique_cmds]
+
+    for cmd_name in excluded_cmds:
+        plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_names == cmd_name].index)
+
+    return plotting_df
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r','--root_dir', type=str,
+                        default='.', help='Root directory containing subject directories')
+    parser.add_argument('-s','--subject_dirs', nargs='+',
+                        help='Directories of subjects to plot for', default=[])
+    parser.add_argument('-p','--plot_type', type=str, default='bar',
+                        help='One of [\'bar\',\'box\']')
+    parser.add_argument('--top_x', type=int, default=None,
+                        help='If given, only the cmds with the x highest execution times are plotted')
+    parser.add_argument('--select_cmds', nargs='+', default=None,
+                        help='If given, only the listed cmds are plotted')
+    parser.add_argument('-t', '--time_threshold', type=float, default=None,
+                        help='If given, only the cmds whose execution times exceed t are plotted')
+    parser.add_argument('--fig_save_dir', type=str,
+                        default='/tmp', help='Directory in which plot images are to be saved')
+    parser.add_argument('--save_fig', dest='save_fig', action='store_true')
+    parser.add_argument('--separate_hemis', dest='separate_hemis', action='store_true')
+    parser.set_defaults(save_fig=False, plot_recon_all_stages=False, separate_hemis=False)
+
+    args = parser.parse_args()
+
+    if not args.subject_dirs:
+        print('[INFO] Subject list not specified. Including all data in root_dir...')
+        subject_dirs = os.listdir(args.root_dir)
+    else:
+        subject_dirs = args.subject_dirs
+
+    yaml_dicts = get_yaml_data(args.root_dir, subject_dirs)
+
     ## Extract recon-surf time information:
     print('[INFO] Extracting command execution times...')
-    cmd_names, cmd_times, recon_all_stage_names, recon_all_stage_times = get_nonunique_cmd_execution_times(yaml_dicts, 
-                                                                                                           True, True)
+    cmd_names, cmd_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts, True)
 
     df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times})
-    recon_all_df = pd.DataFrame({'cmd_names': recon_all_stage_names, 'cmd_times': recon_all_stage_times})
     filtered_df = df.copy()
 
+    filtered_df = separate_hemis(filtered_df, sides_list)
+
     ## Apply filters:
-    if args.top_cmds is not None:
-        increasing_avgs_df = df.groupby('cmd_names').mean()['cmd_times'].sort_values()
-        top_avgs_df = increasing_avgs_df[-args.top_cmds:]
-        bottom_avgs_df = increasing_avgs_df[:-args.top_cmds]
-
-        print('[INFO] Plotting only top {} commands:'.format(args.top_cmds))
-        print(' - ' + '\n - '.join(top_avgs_df.keys()))
-
-        for cmd_name in bottom_avgs_df.keys():
-            filtered_df = filtered_df.drop(filtered_df[filtered_df.cmd_names == cmd_name].index)
+    if args.top_x is not None:
+        filtered_df = get_top_x_cmds(filtered_df, args.top_x)
 
     if args.select_cmds is not None:
         excluded_cmds = [cmd_name for cmd_name in filtered_df.cmd_names.values if cmd_name not in args.select_cmds]
@@ -223,27 +246,6 @@ if __name__ == "__main__":
     fig = plt.gcf()
     if args.save_fig:
         fig.savefig(os.path.join(args.fig_save_dir, 'recon-surf_times_plot.png'))
-
-    if args.plot_recon_all_stages:
-        print('[INFO] Plotting recon-all stage results on a separate plot')
-        plt.figure(figsize=(12, 8))
-        if args.plot_type == 'bar':
-            plot_bar(recon_all_df, args.separate_hemis)
-        elif args.plot_type == 'box':
-            plot_box(recon_all_df, args.separate_hemis)
-        else:
-            print('[WARN] Invalid plot type: {}. Defaulting to bar plot...'.format(args.plot_type))
-            plot_bar(recon_all_df, args.separate_hemis)
-
-        plt.xticks(rotation='80', fontsize=None)
-        plt.title('recon-surf Command Execution Times (Average over {} runs)'.format(len(yaml_dicts)), fontsize=15, pad=15)
-        plt.ylabel('Time (minutes)', fontsize=None)
-        plt.subplots_adjust(bottom=0.5)
-
-        plt.grid()
-        fig = plt.gcf()
-        if args.save_fig:
-            fig.savefig(os.path.join(args.fig_save_dir, 'recon-surf_times_recon_all_stage_plot.png'))
 
     plt.show()
 
