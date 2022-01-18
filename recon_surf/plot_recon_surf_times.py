@@ -118,7 +118,7 @@ if __name__ == "__main__":
     parser.add_argument('-r','--root_dir', type=str,
                         default='.', help='Root directory containing subject directories')
     parser.add_argument('-s','--subject_dirs', nargs='+',
-                        help='Directories of subjects to plot for', required=True)
+                        help='Directories of subjects to plot for', default=[])
     parser.add_argument('-p','--plot_type', type=str, default='bar',
                         help='One of [\'bar\',\'box\']')
     parser.add_argument('--top_cmds', type=int, default=None,
@@ -136,10 +136,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if not args.subject_dirs:
+        print('[INFO] Subject list not specified. Including all data in root_dir...')
+        subject_dirs = os.listdir(args.root_dir)
+    else:
+        subject_dirs = args.subject_dirs
+
     yaml_dicts = []
 
     print('[INFO] Processing data from the files:')
-    for subject_dir in args.subject_dirs:
+    for subject_dir in subject_dirs:
         file_path = os.path.join(args.root_dir, subject_dir, 'scripts/recon-surf_times.yaml'),
         print('  - {}'.format(file_path[0]))
         try:
