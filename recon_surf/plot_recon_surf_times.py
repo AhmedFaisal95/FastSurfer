@@ -181,8 +181,7 @@ if __name__ == "__main__":
     parser.add_argument('--fig_save_dir', type=str,
                         default='/tmp', help='Directory in which plot images are to be saved')
     parser.add_argument('--save_fig', dest='save_fig', action='store_true')
-    parser.add_argument('--separate_hemis', dest='separate_hemis', action='store_true')
-    parser.set_defaults(save_fig=False, plot_recon_all_stages=False, separate_hemis=False)
+    parser.set_defaults(save_fig=False)
 
     args = parser.parse_args()
 
@@ -221,21 +220,16 @@ if __name__ == "__main__":
 
         print('[INFO] Plotting only commands whose durations exceed {} minutes'.format(args.time_threshold))
 
-    if args.separate_hemis:
-        print('[INFO] Separating commands according to hemisphere')
-        filtered_df = separate_hemis(filtered_df)
-        recon_all_df = separate_hemis(recon_all_df)
-
     ## Plot:
     print('[INFO] Plotting results')
     plt.figure(figsize=(12, 8))
     if args.plot_type == 'bar':
-        plot_bar(filtered_df, args.separate_hemis)
+        plot_bar(filtered_df)
     elif args.plot_type == 'box':
-        plot_box(filtered_df, args.separate_hemis)
+        plot_box(filtered_df)
     else:
         print('[WARN] Invalid plot type: {}. Defaulting to bar plot...'.format(args.plot_type))
-        plot_bar(filtered_df, args.separate_hemis)
+        plot_bar(filtered_df)
 
     plt.xticks(rotation='80', fontsize=None)
     plt.title('recon-surf Command Execution Times (Average over {} runs)'.format(len(yaml_dicts)), fontsize=15, pad=15)
