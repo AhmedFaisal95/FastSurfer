@@ -112,6 +112,7 @@ def plot_box(df):
 
 def get_yaml_data(root_dir, subject_dirs):
     yaml_dicts = []
+    valid_dirs = []
 
     print('[INFO] Extracting data from the files:')
     for subject_dir in subject_dirs:
@@ -125,6 +126,7 @@ def get_yaml_data(root_dir, subject_dirs):
                     yaml_dicts.append(yaml.safe_load(stream))
                 except yaml.YAMLError as e:
                     print(e)
+            valid_dirs.append(subject_dir)
 
         except FileNotFoundError as e:
             print(e)
@@ -134,7 +136,7 @@ def get_yaml_data(root_dir, subject_dirs):
         print('[ERROR] No data could be read for processing! Exiting')
         sys.exit()
 
-    return yaml_dicts
+    return yaml_dicts, valid_dirs
 
 def get_top_x_cmds(plotting_df, x):
     means_df = plotting_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
@@ -162,6 +164,8 @@ def get_top_x_cmds(plotting_df, x):
         plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_names == cmd_name].index)
 
     return plotting_df
+
+# def get_selected_cmds(plotting_df, selected_cmds):
 
 
 if __name__ == "__main__":
@@ -191,7 +195,7 @@ if __name__ == "__main__":
     else:
         subject_dirs = args.subject_dirs
 
-    yaml_dicts = get_yaml_data(args.root_dir, subject_dirs)
+    yaml_dicts, subject_dirs = get_yaml_data(args.root_dir, subject_dirs)
 
     ## Extract recon-surf time information:
     print('[INFO] Extracting command execution times...')

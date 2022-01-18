@@ -102,6 +102,7 @@ def separate_hemis(filtered_df, sides_list):
 
 def get_yaml_data(root_dir, subject_dirs):
     yaml_dicts = []
+    valid_dirs = []
 
     print('[INFO] Extracting data from the files:')
     for subject_dir in subject_dirs:
@@ -115,6 +116,7 @@ def get_yaml_data(root_dir, subject_dirs):
                     yaml_dicts.append(yaml.safe_load(stream))
                 except yaml.YAMLError as e:
                     print(e)
+            valid_dirs.append(subject_dir)
 
         except FileNotFoundError as e:
             print(e)
@@ -123,7 +125,7 @@ def get_yaml_data(root_dir, subject_dirs):
     if len(yaml_dicts) == 0:
         print('[ERROR] No data could be read for processing')
 
-    return yaml_dicts
+    return yaml_dicts, valid_dirs
 
 def enforce_custom_side_order(df):
     '''
@@ -320,7 +322,7 @@ if __name__ == "__main__":
     print('[INFO] Extracting initial data...')
     all_subject_dirs = os.listdir(args.root_dir)
 
-    yaml_dicts = get_yaml_data(args.root_dir, all_subject_dirs)
+    yaml_dicts, all_subject_dirs = get_yaml_data(args.root_dir, all_subject_dirs)
 
     cmd_names, cmd_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts, True)
 
@@ -490,7 +492,7 @@ if __name__ == "__main__":
             subject_selection = all_subject_dirs
             load_all_subjs_state = 0
 
-        yaml_dicts = get_yaml_data(args.root_dir, subject_selection)
+        yaml_dicts, subject_dirs = get_yaml_data(args.root_dir, subject_selection)
 
         orig_cmd_names, orig_cmd_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts)
         df = pd.DataFrame({'cmd_names': orig_cmd_names, 'cmd_times': orig_cmd_times})
@@ -503,7 +505,7 @@ if __name__ == "__main__":
             ## but not doing so leads to non-unique cmd entries, which compute_comparison can not handle
             plotting_df = plotting_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
 
-            exemplary_yaml_dicts = get_yaml_data(args.root_dir, [exemplary_subject_selection])
+            exemplary_yaml_dicts, _ = get_yaml_data(args.root_dir, [exemplary_subject_selection])
 
             cmd_names, cmd_times, sides_list = get_nonunique_cmd_execution_times(exemplary_yaml_dicts)
             exemplary_df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times})
