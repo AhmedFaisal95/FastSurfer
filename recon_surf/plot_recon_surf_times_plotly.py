@@ -542,4 +542,4 @@ if __name__ == "__main__":
         return fig, cmd_options, reset_state, reload_cmd_state, load_all_subjs_state, subject_selection, time_threshold, top_x, exemplary_subject_selection, disable_time_threshold_option 
 
 
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', port='8060', debug=True)
