@@ -210,7 +210,10 @@ def get_fig(df, exemplary_subject_selection, num_subjects):
                     yanchor="bottom", x=0.5, xanchor="center"
         )
     )
-    fig.update_xaxes(categoryorder='mean ascending',
+
+    order_array = df.groupby(['cmd_names'], as_index=False).mean().sort_values('cmd_times')['cmd_names']
+    fig.update_xaxes(categoryorder='array',
+                     categoryarray=order_array,
                      tickangle=280,
                      showgrid=True,
                      tickfont={'size': None},
@@ -231,7 +234,7 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects):
                  color_discrete_map={'lh': plotly_colors[4],
                                      'full': plotly_colors[0],
                                      'rh': plotly_colors[2]},
-                 error_y=stds_df['cmd_times'].values.tolist(),
+                 error_y=stds_df['cmd_times'].values,
                  )
 
     fig.update_layout(
@@ -242,7 +245,14 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects):
                     yanchor="bottom", x=0.5, xanchor="center"
         )
     )
-    fig.update_xaxes(categoryorder='mean ascending',
+
+    ## Previously, setting categoryorder to 'mean ascending' would correctly sort bars according to the mean,
+    ## but as a side-effect caused an issue of xticks not getting removed once a cmd is unselected.
+    ## Using 'array', and explicitly providing a sort order in order_array achieves the intended result,
+    ## without this undesirable side-effect.
+    order_array = means_df.groupby(['cmd_names'], as_index=False).mean().sort_values('cmd_times')['cmd_names']
+    fig.update_xaxes(categoryorder='array',
+                     categoryarray=order_array,
                      tickangle=280,
                      showgrid=True,
                      tickfont={'size': None},
@@ -271,7 +281,10 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects):
                     yanchor="bottom", x=0.5, xanchor="center"
         )
     )
-    fig.update_xaxes(categoryorder='mean ascending',
+
+    order_array = df.groupby(['cmd_names'], as_index=False).mean().sort_values('cmd_times')['cmd_names']
+    fig.update_xaxes(categoryorder='array',
+                     categoryarray=order_array,
                      tickangle=280,
                      showgrid=True,
                      tickfont={'size': None},
