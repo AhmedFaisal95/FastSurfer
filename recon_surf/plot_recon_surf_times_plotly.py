@@ -211,7 +211,8 @@ def get_fig(df, exemplary_subject_selection, num_subjects):
         )
     )
 
-    order_array = df.groupby(['cmd_names'], as_index=False).mean().sort_values('cmd_times')['cmd_names']
+    means_df = df.groupby(['cmd_names', 'Side'], as_index=False).mean()   # only used to obtain desired order_array
+    order_array = means_df.groupby(['cmd_names'], as_index=False).max().sort_values('cmd_times')['cmd_names']
     fig.update_xaxes(categoryorder='array',
                      categoryarray=order_array,
                      tickangle=280,
@@ -250,7 +251,9 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects):
     ## but as a side-effect caused an issue of xticks not getting removed once a cmd is unselected.
     ## Using 'array', and explicitly providing a sort order in order_array achieves the intended result,
     ## without this undesirable side-effect.
-    order_array = means_df.groupby(['cmd_names'], as_index=False).mean().sort_values('cmd_times')['cmd_names']
+    ## TODO: debug FutureWarning due to max op
+    order_array = means_df.groupby(['cmd_names'], as_index=False).max().sort_values('cmd_times')['cmd_names']
+
     fig.update_xaxes(categoryorder='array',
                      categoryarray=order_array,
                      tickangle=280,
@@ -282,7 +285,7 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects):
         )
     )
 
-    order_array = df.groupby(['cmd_names'], as_index=False).mean().sort_values('cmd_times')['cmd_names']
+    order_array = df.groupby(['cmd_names'], as_index=False).max().sort_values('cmd_times')['cmd_names']
     fig.update_xaxes(categoryorder='array',
                      categoryarray=order_array,
                      tickangle=280,
