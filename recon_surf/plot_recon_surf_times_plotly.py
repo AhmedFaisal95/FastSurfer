@@ -24,6 +24,7 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
     cmd_names = []
     cmd_times = []
     sides_list = []
+    subject_ids = []
 
     for yaml_dict in yaml_dicts:
         for stage_num in range(len(yaml_dict['recon-surf_commands'])):
@@ -37,6 +38,7 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
                             cmd_times.append(cmd_entry['duration_m'])
                         elif 'duration_s' in cmd_entry.keys():
                             cmd_times.append(cmd_entry['duration_s'])
+                        subject_ids.append(yaml_dict['sid'])
 
                     for stage_dict in cmd_entry['stages']:
                         if split_recon_all_stages:
@@ -45,6 +47,7 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
                                 cmd_times.append(stage_dict['duration_m'])
                             elif 'duration_s' in stage_dict.keys():
                                 cmd_times.append(stage_dict['duration_s'])
+                            subject_ids.append(yaml_dict['sid'])
 
                         if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
                             sides_list.append('lh')
@@ -65,6 +68,8 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
                     elif 'duration_s' in cmd_entry.keys():
                         cmd_times.append(cmd_entry['duration_s'])
 
+                    subject_ids.append(yaml_dict['sid'])
+
                     if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
                         sides_list.append('lh')
                     elif any(rh_str in cmd_entry['cmd'] for rh_str in ['rh', '127 ']):
@@ -72,7 +77,7 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
                     else:
                         sides_list.append('full')
 
-    return cmd_names, cmd_times, sides_list
+    return cmd_names, cmd_times, sides_list, subject_ids
 
 def separate_hemis(filtered_df, sides_list):
     cols = filtered_df.columns.values.tolist()
@@ -83,6 +88,7 @@ def separate_hemis(filtered_df, sides_list):
         cmd_name = row[cols[0]]
         cmd_time = row[cols[1]]
         side = sides_list[index]
+        subject_id = row[cols[2]]
 
         if 'recon-all' in cmd_name:
             if 'lh' in cmd_name:
@@ -94,7 +100,7 @@ def separate_hemis(filtered_df, sides_list):
                 if cmd_name[-1] == ' ':
                     cmd_name = cmd_name[:-1]
 
-        rows_list.append([cmd_name, cmd_time, side])
+        rows_list.append([cmd_name, cmd_time, subject_id, side])
         
     two_sided_filtered_df = pd.DataFrame(rows_list, columns=cols)
     
@@ -193,6 +199,7 @@ def update_data(fig, df):
     return fig
 
 def get_fig(df, exemplary_subject_selection, num_subjects):
+    # df.loc[(df['cmd_names'] == 'mris_anatomical_stats') & (df['Side'] == 'lh'), 'cmd_times'] *= 20    ## data manipulated to test max ordering
     fig = px.histogram(df, x='cmd_names', y='cmd_times',
                        color='Side', barmode='group', histfunc='avg',
                        color_discrete_map={'lh': plotly_colors[4],
@@ -268,12 +275,14 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects):
 
 def get_box_fig(df, exemplary_subject_selection, num_subjects):
     ##TODO: debug issue of tiny bars (only here in script, not in ipynb)
+    df.to_csv('/tmp/df.csv')
     fig = px.box(df, x='cmd_names', y='cmd_times',
                  color='Side',
                  color_discrete_map={'lh': plotly_colors[4],
                                      'full': plotly_colors[0],
                                      'rh': plotly_colors[2]},
-                 points='all'
+                 points='all',
+                 hover_data={'subject_id': True}
                  )
 
     fig.update_layout(
@@ -340,9 +349,9 @@ if __name__ == "__main__":
 
     yaml_dicts, all_subject_dirs = get_yaml_data(args.root_dir, all_subject_dirs)
 
-    cmd_names, cmd_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts, True)
+    cmd_names, cmd_times, sides_list, subject_ids = get_nonunique_cmd_execution_times(yaml_dicts, True)
 
-    df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times})
+    df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times, 'subject_id': subject_ids})
     base_df = separate_hemis(df, sides_list)
     base_df = base_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
     base_df = enforce_custom_side_order(base_df)
@@ -510,8 +519,9 @@ if __name__ == "__main__":
 
         yaml_dicts, subject_dirs = get_yaml_data(args.root_dir, subject_selection)
 
-        orig_cmd_names, orig_cmd_times, sides_list = get_nonunique_cmd_execution_times(yaml_dicts)
-        df = pd.DataFrame({'cmd_names': orig_cmd_names, 'cmd_times': orig_cmd_times})
+        orig_cmd_names, orig_cmd_times, sides_list, subject_ids = get_nonunique_cmd_execution_times(yaml_dicts)
+
+        df = pd.DataFrame({'cmd_names': orig_cmd_names, 'cmd_times': orig_cmd_times, 'subject_id': subject_ids})
 
         plotting_df = df.copy()
         plotting_df = separate_hemis(plotting_df, sides_list)
@@ -523,8 +533,8 @@ if __name__ == "__main__":
 
             exemplary_yaml_dicts, _ = get_yaml_data(args.root_dir, [exemplary_subject_selection])
 
-            cmd_names, cmd_times, sides_list = get_nonunique_cmd_execution_times(exemplary_yaml_dicts)
-            exemplary_df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times})
+            cmd_names, cmd_times, sides_list, subject_ids = get_nonunique_cmd_execution_times(exemplary_yaml_dicts)
+            exemplary_df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times, 'subject_id': subject_ids})
             exemplary_df = separate_hemis(exemplary_df, sides_list)
             exemplary_df = exemplary_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
 
