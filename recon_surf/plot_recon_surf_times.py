@@ -72,8 +72,8 @@ def separate_hemis(filtered_df, sides_list):
     rows_list = []
 
     for index, row in filtered_df.iterrows():
-        cmd_name = row[cols[0]]
-        cmd_time = row[cols[1]]
+        cmd_name = row['cmd_names']
+        cmd_time = row['cmd_times']
         side = sides_list[index]
 
         if 'recon-all' in cmd_name:
