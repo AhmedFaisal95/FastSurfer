@@ -259,7 +259,8 @@ if __name__ == "__main__":
 
         html.Div([
                 html.Div([
-                          html.Label('Subjects:', style={'font-weight': 'bold'}),
+                          html.Label('Subjects:', style={'font-weight': 'bold'},
+                                     title='Command run-times are averaged over the subjects selected here'),
 
                           html.Div([
                                     dcc.Dropdown(
@@ -270,7 +271,9 @@ if __name__ == "__main__":
                                     ], style={'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
 
                           html.Br(),
-                          html.Label('Exemplary Subject:', style={'font-weight': 'bold'}),
+                          html.Label('Exemplary Subject:', style={'font-weight': 'bold'},
+                                     title='If specified, the plot displays the differences between the selected '
+                                            'subjects\' execution times and the exemplary subject\'s mean execution time, for each common command'),
 
                           html.Div([
                                     dcc.Dropdown(id='exemplary_subject_selection',
@@ -288,12 +291,14 @@ if __name__ == "__main__":
                                                                 'Time threshold: ',
                                                                 dcc.Input(id='time_threshold',
                                                                           value=0, type='number'),
-                                                                ], style={'width': '80%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                                ], style={'width': '80%', 'border':'2px black solid' if draw_debug_borders else None},
+                                                                title='The plot displays only commands whose execution times exceed this threshold'),
                                                         html.Div([
                                                                 'Plot top commands: ',
                                                                 dcc.Input(id='top_x',
                                                                           value=0, type='number'),
-                                                                ], style={'margin-top': '2%','width': '80%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                                ], style={'margin-top': '2%','width': '80%', 'border':'2px black solid' if draw_debug_borders else None},
+                                                                title='If specified, only the commands with the highest execution times are plotted. This field specifies how many'),
                                                         ], style={'display': 'inline-block', 'flexWrap': 'wrap','width': '50%', 'border':'2px black solid' if draw_debug_borders else None}),
 
                                               html.Div([
@@ -316,19 +321,23 @@ if __name__ == "__main__":
                                   html.Div([
                                             html.Div([
                                                     html.Button(id='reset_state', n_clicks=0, children='Reset', style={'width': '100%', 'height':'100%'}),
-                                                    ], style={'display': 'inline-block', 'width': '120px', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None}),
+                                                    ], style={'display': 'inline-block', 'width': '120px', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None},
+                                                                title='Resets to the initial state. Useful for clearing applying filters and reloading all data'),
                                             html.Div([
                                                     html.Button(id='reload_cmd_state', n_clicks=0, children='Reload Cmds', style={'width': '100%', 'height':'100%'}),
-                                                    ], style={'display': 'inline-block','width': '120px', 'margin-left': '2%', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None}),
+                                                    ], style={'display': 'inline-block','width': '120px', 'margin-left': '2%', 'height':'30px' , 'border':'2px black solid' if draw_debug_borders else None},
+                                                    title='Reloads all commands applicable to the current selection of subjects and filters. Useful for loading all valid, unselected commands'),
                                             html.Div([
                                                     html.Button(id='load_all_subjs_state', n_clicks=0, children='Load All Subjects', style={'width': '100%', 'height':'100%'}),
                                                     ], style={'display': 'inline-block','width': '120px',  'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None, 'height':'30px'}),
-                                            ], style={'width':'100%', 'flexWrap': 'wrap','display': 'inline-block', 'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
+                                            ], style={'width':'100%', 'flexWrap': 'wrap','display': 'inline-block', 'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None},
+                                                                title='Loads all valid subject data found in the root directory'),
                                   ], style={'width': None, 'border':'2px black solid' if draw_debug_borders else None}),
                             ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%', 'verticalAlign': 'top', 'border':'2px black solid' if draw_debug_borders else None}),
 
                 html.Div([
-                    html.Label('Commands:', style={'font-weight': 'bold'}),
+                    html.Label('Commands:', style={'font-weight': 'bold'},
+                                title='Commands can be selected or removed from the plot using the drop-down menu. Command names can also be searched for'),
                          html.Div([
                               dcc.Dropdown(
                                   id='cmd_selection',
