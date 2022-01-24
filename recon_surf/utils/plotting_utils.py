@@ -9,8 +9,8 @@ import pandas as pd
 
 def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
     cmd_names = []
-    cmd_times = []
-    sides_list = []
+    execution_times = []
+    hemis_list = []
     subject_ids = []
 
     for yaml_dict in yaml_dicts:
@@ -18,33 +18,33 @@ def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
             entry_list = list(yaml_dict['recon-surf_commands'][stage_num].values())[0]
 
             for cmd_entry in entry_list:
-                side = None
+                hemi = None
                 if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
-                    side = 'lh'
+                    hemi = 'lh'
                 elif any(rh_str in cmd_entry['cmd'] for rh_str in ['rh', '127 ']):
-                    side = 'rh'
+                    hemi = 'rh'
                 else:
-                    side = 'full'
+                    hemi = 'both'
 
                 if cmd_entry['cmd'].split(' ')[0] == 'recon-all':
                     if not split_recon_all_stages:
                         cmd_names.append(cmd_entry['cmd'].split(' ')[0])
                         if 'duration_m' in cmd_entry.keys():
-                            cmd_times.append(cmd_entry['duration_m'])
+                            execution_times.append(cmd_entry['duration_m'])
                         elif 'duration_s' in cmd_entry.keys():
-                            cmd_times.append(cmd_entry['duration_s'])
+                            execution_times.append(cmd_entry['duration_s'])
 
-                        sides_list.append(side)
+                        hemis_list.append(hemi)
                         subject_ids.append(yaml_dict['sid'])
 
                     else:
                         for stage_dict in cmd_entry['stages']:
                             cmd_names.append('recon-all:'+stage_dict['stage_name'])
                             if 'duration_m' in stage_dict.keys():
-                                cmd_times.append(stage_dict['duration_m'])
+                                execution_times.append(stage_dict['duration_m'])
                             elif 'duration_s' in stage_dict.keys():
-                                cmd_times.append(stage_dict['duration_s'])
-                            sides_list.append(side)
+                                execution_times.append(stage_dict['duration_s'])
+                            hemis_list.append(hemi)
                             subject_ids.append(yaml_dict['sid'])
 
                 else:
@@ -55,25 +55,25 @@ def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
                         cmd_names.append(cmd_entry['cmd'].split(' ')[0])
 
                     if 'duration_m' in cmd_entry.keys():
-                        cmd_times.append(cmd_entry['duration_m'])
+                        execution_times.append(cmd_entry['duration_m'])
                     elif 'duration_s' in cmd_entry.keys():
-                        cmd_times.append(cmd_entry['duration_s'])
+                        execution_times.append(cmd_entry['duration_s'])
 
-                    sides_list.append(side)
+                    hemis_list.append(hemi)
                     subject_ids.append(yaml_dict['sid'])
 
-    return cmd_names, cmd_times, sides_list, subject_ids
+    return cmd_names, execution_times, hemis_list, subject_ids
 
-def separate_hemis(filtered_df, sides_list):
+def separate_hemis(filtered_df, hemis_list):
     cols = filtered_df.columns.values.tolist()
-    cols.append('Side')
+    cols.append('hemi')
     rows_list = []
         
     for index, row in filtered_df.iterrows():
-        cmd_name = row['cmd_names']
-        cmd_time = row['cmd_times']
+        cmd_name = row['cmd_name']
+        cmd_time = row['execution_time']
         subject_id = row['subject_id']
-        side = sides_list[index]
+        hemi = hemis_list[index]
 
         if 'recon-all' in cmd_name:
             if 'lh' in cmd_name:
@@ -85,7 +85,7 @@ def separate_hemis(filtered_df, sides_list):
                 if cmd_name[-1] == ' ':
                     cmd_name = cmd_name[:-1]
 
-        rows_list.append([cmd_name, cmd_time, subject_id, side])
+        rows_list.append([cmd_name, cmd_time, subject_id, hemi])
         
     two_sided_filtered_df = pd.DataFrame(rows_list, columns=cols)
     
@@ -116,15 +116,15 @@ def get_yaml_data(root_dir, subject_dirs):
     return yaml_dicts, valid_dirs
 
 def get_top_x_cmds(plotting_df, x):
-    means_df = plotting_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
-    means_df = means_df.loc[means_df['cmd_times'] == means_df['cmd_times']]   ## Remove NaN entries produced by groupby
+    means_df = plotting_df.groupby(['cmd_name', 'hemi'], as_index=False).mean()
+    means_df = means_df.loc[means_df['execution_time'] == means_df['execution_time']]   ## Remove NaN entries produced by groupby
 
-    ordered_means_df = means_df.loc[reversed(means_df['cmd_times'].sort_values().index)]
+    ordered_means_df = means_df.loc[reversed(means_df['execution_time'].sort_values().index)]
     top_unique_cmds = []
     counter = 0
 
     for index, row in ordered_means_df.iterrows():
-        cmd_name = row['cmd_names']
+        cmd_name = row['cmd_name']
         if cmd_name not in top_unique_cmds:
             top_unique_cmds.append(cmd_name)
             counter += 1
@@ -132,9 +132,9 @@ def get_top_x_cmds(plotting_df, x):
         if counter == x:
             break
 
-    excluded_cmds = [cmd_name for cmd_name in np.unique(means_df.cmd_names.values).tolist() if cmd_name not in top_unique_cmds]
+    excluded_cmds = [cmd_name for cmd_name in np.unique(means_df.cmd_name.values).tolist() if cmd_name not in top_unique_cmds]
 
     for cmd_name in excluded_cmds:
-        plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_names == cmd_name].index)
+        plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_name == cmd_name].index)
 
     return plotting_df

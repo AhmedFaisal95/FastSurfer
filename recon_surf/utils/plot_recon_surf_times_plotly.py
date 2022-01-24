@@ -28,8 +28,8 @@ def enforce_custom_side_order(df):
     Fixing order of within-group bars (plotly can not do this implictly
     as seaborn does through hue_order)
     '''
-    df['Side'] = pd.Categorical(df['Side'], ['lh', 'full', 'rh'])
-    df = df.sort_values('Side')
+    df['hemi'] = pd.Categorical(df['hemi'], ['lh', 'both', 'rh'])
+    df = df.sort_values('hemi')
 
     return df
 
@@ -43,40 +43,40 @@ def compute_comparison(df, exemplary_df):
     rows_list = []
 
     for index, row in df.iterrows():
-        cmd_name = row['cmd_names']
+        cmd_name = row['cmd_name']
 
-        if cmd_name not in exemplary_df.cmd_names.values:
+        if cmd_name not in exemplary_df.cmd_name.values:
             continue
 
-        cmd_time = row['cmd_times']
-        side = row['Side']
+        cmd_time = row['execution_time']
+        hemi = row['hemi']
         subject_id = row['subject_id']
 
         try:
-            exemplary_cmd_time = exemplary_df[(exemplary_df.cmd_names == cmd_name) & \
-                                              (exemplary_df.Side == side)]['cmd_times'].item()
+            exemplary_cmd_time = exemplary_df[(exemplary_df.cmd_name == cmd_name) & \
+                                              (exemplary_df.hemi == hemi)]['execution_time'].item()
         except ValueError as e:
             print(e)
             print('In compute_comparison: Found more than one element satisfying the given condition ' \
                   'within exemplary subject dataframe!' \
-                  'Command name = {}\nSide = {}\n'.format(cmd_name, side) + \
+                  'Command name = {}\nSide = {}\n'.format(cmd_name, hemi) + \
                   'This may indicate mistake in the input dataframes.')
 
         if exemplary_cmd_time == 0.0:
             continue
         cmd_time_diff = cmd_time - exemplary_cmd_time
 
-        rows_list.append([cmd_name, cmd_time_diff, subject_id, side])
+        rows_list.append([cmd_name, cmd_time_diff, subject_id, hemi])
 
     comparison_df = pd.DataFrame(rows_list, columns=cols)
 
     return comparison_df
 
 def update_data(fig, df):
-    temp = px.histogram(df, x='cmd_names', y='cmd_times',
-                        color='Side', barmode='group', histfunc='avg',
+    temp = px.histogram(df, x='cmd_name', y='execution_time',
+                        color='hemi', barmode='group', histfunc='avg',
                         color_discrete_map={'lh': plotly_colors[4],
-                                            'full': plotly_colors[0],
+                                            'both': plotly_colors[0],
                                             'rh': plotly_colors[2]},
                         )
     if len(fig.data) == 0:
@@ -90,11 +90,11 @@ def update_data(fig, df):
     return fig
 
 def get_fig(df, exemplary_subject_selection, num_subjects):
-    # df.loc[(df['cmd_names'] == 'mris_anatomical_stats') & (df['Side'] == 'lh'), 'cmd_times'] *= 20    ## data manipulated to test max ordering
-    fig = px.histogram(df, x='cmd_names', y='cmd_times',
-                       color='Side', barmode='group', histfunc='avg',
+    # df.loc[(df['cmd_name'] == 'mris_anatomical_stats') & (df['hemi'] == 'lh'), 'execution_time'] *= 20    ## data manipulated to test max ordering
+    fig = px.histogram(df, x='cmd_name', y='execution_time',
+                       color='hemi', barmode='group', histfunc='avg',
                        color_discrete_map={'lh': plotly_colors[4],
-                                           'full': plotly_colors[0],
+                                           'both': plotly_colors[0],
                                            'rh': plotly_colors[2]},
                        )
 
@@ -109,8 +109,8 @@ def get_fig(df, exemplary_subject_selection, num_subjects):
         )
     )
 
-    means_df = df.groupby(['cmd_names', 'Side'], as_index=False).mean()   # only used to obtain desired order_array
-    order_array = means_df.groupby(['cmd_names'], as_index=False).max().sort_values('cmd_times')['cmd_names']
+    means_df = df.groupby(['cmd_name', 'hemi'], as_index=False).mean()   # only used to obtain desired order_array
+    order_array = means_df.groupby(['cmd_name'], as_index=False).max().sort_values('execution_time')['cmd_name']
     fig.update_xaxes(categoryorder='array',
                      categoryarray=order_array,
                      tickangle=280,
@@ -125,15 +125,15 @@ def get_fig(df, exemplary_subject_selection, num_subjects):
     return fig
 
 def get_bar_fig(df, exemplary_subject_selection, num_subjects):
-    means_df = df.groupby(['cmd_names', 'Side'], as_index=False).mean()
-    stds_df = df.groupby(['cmd_names', 'Side'], as_index=False).std()
+    means_df = df.groupby(['cmd_name', 'hemi'], as_index=False).mean()
+    stds_df = df.groupby(['cmd_name', 'hemi'], as_index=False).std()
 
-    fig = px.bar(means_df, x='cmd_names', y='cmd_times',
-                 color='Side', barmode='group',
+    fig = px.bar(means_df, x='cmd_name', y='execution_time',
+                 color='hemi', barmode='group',
                  color_discrete_map={'lh': plotly_colors[4],
-                                     'full': plotly_colors[0],
+                                     'both': plotly_colors[0],
                                      'rh': plotly_colors[2]},
-                 error_y=stds_df['cmd_times'].values,
+                 error_y=stds_df['execution_time'].values,
                  )
 
     fig.update_layout(
@@ -150,7 +150,7 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects):
     ## Using 'array', and explicitly providing a sort order in order_array achieves the intended result,
     ## without this undesirable side-effect.
     ## TODO: debug FutureWarning due to max op
-    order_array = means_df.groupby(['cmd_names'], as_index=False).max().sort_values('cmd_times')['cmd_names']
+    order_array = means_df.groupby(['cmd_name'], as_index=False).max().sort_values('execution_time')['cmd_name']
 
     fig.update_xaxes(categoryorder='array',
                      categoryarray=order_array,
@@ -167,10 +167,10 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects):
 def get_box_fig(df, exemplary_subject_selection, num_subjects):
     ##TODO: debug issue of tiny bars (only here in script, not in ipynb)
     df.to_csv('/tmp/df.csv')
-    fig = px.box(df, x='cmd_names', y='cmd_times',
-                 color='Side',
+    fig = px.box(df, x='cmd_name', y='execution_time',
+                 color='hemi',
                  color_discrete_map={'lh': plotly_colors[4],
-                                     'full': plotly_colors[0],
+                                     'both': plotly_colors[0],
                                      'rh': plotly_colors[2]},
                  points='all',
                  hover_data={'subject_id': True}
@@ -185,7 +185,7 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects):
         )
     )
 
-    order_array = df.groupby(['cmd_names'], as_index=False).max().sort_values('cmd_times')['cmd_names']
+    order_array = df.groupby(['cmd_name'], as_index=False).max().sort_values('execution_time')['cmd_name']
     fig.update_xaxes(categoryorder='array',
                      categoryarray=order_array,
                      tickangle=280,
@@ -218,14 +218,14 @@ if __name__ == "__main__":
         print('[ERROR] No data could be read for processing! Exiting')
         sys.exit()
 
-    cmd_names, cmd_times, sides_list, subject_ids = extract_cmd_runtime_data(yaml_dicts, True)
+    cmd_names, execution_time, hemis_list, subject_ids = extract_cmd_runtime_data(yaml_dicts, True)
 
-    df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times, 'subject_id': subject_ids})
-    base_df = separate_hemis(df, sides_list)
-    base_df = base_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
+    df = pd.DataFrame({'cmd_name': cmd_names, 'execution_time': execution_time, 'subject_id': subject_ids})
+    base_df = separate_hemis(df, hemis_list)
+    base_df = base_df.groupby(['cmd_name', 'hemi'], as_index=False).mean()
     base_df = enforce_custom_side_order(base_df)
 
-    default_cmd_options = np.unique(base_df['cmd_names'].values).tolist()
+    default_cmd_options = np.unique(base_df['cmd_name'].values).tolist()
     cmd_multi_dropdown_options = [{'label': cmd_name, 'value': cmd_name} for cmd_name in default_cmd_options]
     if start_with_empty_plot:
         default_cmd_options = []
@@ -388,20 +388,20 @@ if __name__ == "__main__":
 
         yaml_dicts, subject_dirs = get_yaml_data(args.root_dir, subject_selection)
 
-        orig_cmd_names, orig_cmd_times, sides_list, subject_ids = extract_cmd_runtime_data(yaml_dicts)
+        orig_cmd_names, orig_execution_time, hemis_list, subject_ids = extract_cmd_runtime_data(yaml_dicts)
 
-        df = pd.DataFrame({'cmd_names': orig_cmd_names, 'cmd_times': orig_cmd_times, 'subject_id': subject_ids})
+        df = pd.DataFrame({'cmd_name': orig_cmd_names, 'execution_time': orig_execution_time, 'subject_id': subject_ids})
 
         plotting_df = df.copy()
-        plotting_df = separate_hemis(plotting_df, sides_list)
+        plotting_df = separate_hemis(plotting_df, hemis_list)
 
         if exemplary_subject_selection != 'None' and exemplary_subject_selection is not None:
             exemplary_yaml_dicts, _ = get_yaml_data(args.root_dir, [exemplary_subject_selection])
 
-            cmd_names, cmd_times, sides_list, subject_ids = extract_cmd_runtime_data(exemplary_yaml_dicts)
-            exemplary_df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times, 'subject_id': subject_ids})
-            exemplary_df = separate_hemis(exemplary_df, sides_list)
-            exemplary_df = exemplary_df.groupby(['cmd_names', 'Side', 'subject_id'], as_index=False).mean()
+            cmd_names, execution_time, hemis_list, subject_ids = extract_cmd_runtime_data(exemplary_yaml_dicts)
+            exemplary_df = pd.DataFrame({'cmd_name': cmd_names, 'execution_time': execution_time, 'subject_id': subject_ids})
+            exemplary_df = separate_hemis(exemplary_df, hemis_list)
+            exemplary_df = exemplary_df.groupby(['cmd_name', 'hemi', 'subject_id'], as_index=False).mean()
 
             plotting_df = compute_comparison(plotting_df, exemplary_df)
 
@@ -415,9 +415,9 @@ if __name__ == "__main__":
 
             reload_cmd_state = 0
         else:
-            excluded_cmds = [cmd_name for cmd_name in plotting_df.cmd_names.values if cmd_name not in cmd_selection]
+            excluded_cmds = [cmd_name for cmd_name in plotting_df.cmd_name.values if cmd_name not in cmd_selection]
         for excluded_cmd in excluded_cmds:
-            plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_names == excluded_cmd].index)
+            plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_name == excluded_cmd].index)
 
         ## Top x cmds:
         if top_x is not None and top_x != 0:
@@ -425,7 +425,7 @@ if __name__ == "__main__":
 
         ## Time threshold:
         if not disable_time_threshold_option:
-            plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_times < time_threshold].index)
+            plotting_df = plotting_df.drop(plotting_df[plotting_df.execution_time < time_threshold].index)
 
         if len(plotting_df) != 0:
             if plot_type == 'Bar':
@@ -437,7 +437,7 @@ if __name__ == "__main__":
         else:
             fig = plotly.graph_objs.Figure()
 
-        cmd_options = np.unique(plotting_df['cmd_names'].values).tolist()
+        cmd_options = np.unique(plotting_df['cmd_name'].values).tolist()
 
         return fig, cmd_options, reset_state, reload_cmd_state, load_all_subjs_state, subject_selection, time_threshold, top_x, exemplary_subject_selection, disable_time_threshold_option 
 

@@ -16,22 +16,22 @@ tab10_color_palette_ = sns.color_palette('tab10', 10)
 
 
 def plot_bar(df):
-    sns.barplot(x='cmd_names', y='cmd_times', data=df,
-                order=df.groupby('cmd_names').mean()['cmd_times'].sort_values().index,
-                hue='Side', ci='sd', capsize=.1,
+    sns.barplot(x='cmd_name', y='execution_time', data=df,
+                order=df.groupby('cmd_name').mean()['execution_time'].sort_values().index,
+                hue='hemi', ci='sd', capsize=.1,
                 palette={'lh': tab10_color_palette_[1],
-                         'full': tab10_color_palette_[0],
+                         'both': tab10_color_palette_[0],
                          'rh': tab10_color_palette_[2]},
-                hue_order=['lh', 'full', 'rh'])
+                hue_order=['lh', 'both', 'rh'])
 
 def plot_box(df):
-    sns.boxplot(x='cmd_names', y='cmd_times', data=df,
-                order=df.groupby('cmd_names').mean()['cmd_times'].sort_values().index,
-                hue='Side',
+    sns.boxplot(x='cmd_name', y='execution_time', data=df,
+                order=df.groupby('cmd_name').mean()['execution_time'].sort_values().index,
+                hue='hemi',
                 palette={'lh': tab10_color_palette_[1],
-                         'full': tab10_color_palette_[0],
+                         'both': tab10_color_palette_[0],
                          'rh': tab10_color_palette_[2]},
-                hue_order=['lh', 'full', 'rh'])
+                hue_order=['lh', 'both', 'rh'])
 
 
 # def get_selected_cmds(plotting_df, selected_cmds):
@@ -71,13 +71,13 @@ if __name__ == "__main__":
 
     ## Extract recon-surf time information:
     print('[INFO] Extracting command execution times...')
-    cmd_names, cmd_times, sides_list, subject_ids = extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True)
+    cmd_names, execution_times, hemis_list, subject_ids = extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True)
 
-    df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times, 'subject_id': subject_ids})
+    df = pd.DataFrame({'cmd_name': cmd_names, 'execution_time': execution_times, 'subject_id': subject_ids})
 
     filtered_df = df.copy()
 
-    filtered_df = separate_hemis(filtered_df, sides_list)
+    filtered_df = separate_hemis(filtered_df, hemis_list)
 
     ## Apply filters:
     if args.top_x is not None:
@@ -87,16 +87,16 @@ if __name__ == "__main__":
         print(' - ' + '\n - '.join(top_unique_cmds))
 
     if args.select_cmds is not None:
-        excluded_cmds = [cmd_name for cmd_name in filtered_df.cmd_names.values if cmd_name not in args.select_cmds]
+        excluded_cmds = [cmd_name for cmd_name in filtered_df.cmd_name.values if cmd_name not in args.select_cmds]
 
         for excluded_cmd in excluded_cmds:
-            filtered_df = filtered_df.drop(filtered_df[filtered_df.cmd_names == excluded_cmd].index)
+            filtered_df = filtered_df.drop(filtered_df[filtered_df.cmd_name == excluded_cmd].index)
 
         print('[INFO] Plotting only the desired commands:')
         print(' - ' + '\n - '.join(args.select_cmds))
 
     if args.time_threshold is not None:
-        filtered_df = filtered_df.drop(filtered_df[filtered_df.cmd_times < args.time_threshold].index)
+        filtered_df = filtered_df.drop(filtered_df[filtered_df.execution_time < args.time_threshold].index)
 
         print('[INFO] Plotting only commands whose durations exceed {} minutes'.format(args.time_threshold))
 
