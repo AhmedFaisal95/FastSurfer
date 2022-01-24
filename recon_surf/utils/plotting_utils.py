@@ -35,7 +35,7 @@ def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
                             execution_times.append(cmd_entry['duration_s'])
 
                         hemis_list.append(hemi)
-                        subject_ids.append(yaml_dict['sid'])
+                        subject_ids.append(yaml_dict['subject_id'])
 
                     else:
                         for stage_dict in cmd_entry['stages']:
@@ -45,7 +45,7 @@ def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
                             elif 'duration_s' in stage_dict.keys():
                                 execution_times.append(stage_dict['duration_s'])
                             hemis_list.append(hemi)
-                            subject_ids.append(yaml_dict['sid'])
+                            subject_ids.append(yaml_dict['subject_id'])
 
                 else:
                     ## If python3 script, get script name:
@@ -60,7 +60,7 @@ def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
                         execution_times.append(cmd_entry['duration_s'])
 
                     hemis_list.append(hemi)
-                    subject_ids.append(yaml_dict['sid'])
+                    subject_ids.append(yaml_dict['subject_id'])
 
     return cmd_names, execution_times, hemis_list, subject_ids
 
