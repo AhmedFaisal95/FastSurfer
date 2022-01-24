@@ -153,13 +153,14 @@ def compute_comparison(df, exemplary_df):
     rows_list = []
 
     for index, row in df.iterrows():
-        cmd_name = row[cols[0]]
+        cmd_name = row['cmd_names']
 
         if cmd_name not in exemplary_df.cmd_names.values:
             continue
 
-        cmd_time = row[cols[2]]
-        side = row[cols[1]]
+        cmd_time = row['cmd_times']
+        side = row['Side']
+        subject_id = row['subject_id']
 
         try:
             exemplary_cmd_time = exemplary_df[(exemplary_df.cmd_names == cmd_name) & \
@@ -173,9 +174,9 @@ def compute_comparison(df, exemplary_df):
 
         if exemplary_cmd_time == 0.0:
             continue
-        cmd_time_norm = cmd_time / exemplary_cmd_time
+        cmd_time_diff = cmd_time - exemplary_cmd_time
 
-        rows_list.append([cmd_name, side, cmd_time_norm])
+        rows_list.append([cmd_name, cmd_time_diff, subject_id, side])
 
     comparison_df = pd.DataFrame(rows_list, columns=cols)
 
@@ -229,7 +230,7 @@ def get_fig(df, exemplary_subject_selection, num_subjects):
                      automargin=True)
 
     no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
-    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else '% of exemplary subject: {}'.format(exemplary_subject_selection))
+    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
 
     return fig
 
@@ -269,7 +270,7 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects):
                      title=None)
 
     no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
-    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else '% of exemplary subject: {}'.format(exemplary_subject_selection))
+    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
 
     return fig
 
@@ -303,7 +304,7 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects):
                      title=None)
 
     no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
-    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else '% of exemplary subject: {}'.format(exemplary_subject_selection))
+    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
 
     return fig
 
@@ -527,16 +528,12 @@ if __name__ == "__main__":
         plotting_df = separate_hemis(plotting_df, sides_list)
 
         if exemplary_subject_selection != 'None' and exemplary_subject_selection is not None:
-            ## TODO: handle case for box plot, where computing means leads to loss of variance info
-            ## but not doing so leads to non-unique cmd entries, which compute_comparison can not handle
-            plotting_df = plotting_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
-
             exemplary_yaml_dicts, _ = get_yaml_data(args.root_dir, [exemplary_subject_selection])
 
             cmd_names, cmd_times, sides_list, subject_ids = get_nonunique_cmd_execution_times(exemplary_yaml_dicts)
             exemplary_df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times, 'subject_id': subject_ids})
             exemplary_df = separate_hemis(exemplary_df, sides_list)
-            exemplary_df = exemplary_df.groupby(['cmd_names', 'Side'], as_index=False).mean()
+            exemplary_df = exemplary_df.groupby(['cmd_names', 'Side', 'subject_id'], as_index=False).mean()
 
             plotting_df = compute_comparison(plotting_df, exemplary_df)
 
@@ -559,7 +556,8 @@ if __name__ == "__main__":
             plotting_df = get_top_x_cmds(plotting_df, top_x)
 
         ## Time threshold:
-        plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_times < time_threshold].index)
+        if not disable_time_threshold_option:
+            plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_times < time_threshold].index)
 
         if plot_type == 'Bar':
             fig = get_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
