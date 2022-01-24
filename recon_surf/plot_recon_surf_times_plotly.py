@@ -31,6 +31,14 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
             entry_list = list(yaml_dict['recon-surf_commands'][stage_num].values())[0]
 
             for cmd_entry in entry_list:
+                side = None
+                if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
+                    side = 'lh'
+                elif any(rh_str in cmd_entry['cmd'] for rh_str in ['rh', '127 ']):
+                    side = 'rh'
+                else:
+                    side = 'full'
+
                 if cmd_entry['cmd'].split(' ')[0] == 'recon-all':
                     if not split_recon_all_stages:
                         cmd_names.append(cmd_entry['cmd'].split(' ')[0])
@@ -38,23 +46,19 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
                             cmd_times.append(cmd_entry['duration_m'])
                         elif 'duration_s' in cmd_entry.keys():
                             cmd_times.append(cmd_entry['duration_s'])
+
+                        sides_list.append(side)
                         subject_ids.append(yaml_dict['sid'])
 
-                    for stage_dict in cmd_entry['stages']:
-                        if split_recon_all_stages:
+                    else:
+                        for stage_dict in cmd_entry['stages']:
                             cmd_names.append('recon-all:'+stage_dict['stage_name'])
                             if 'duration_m' in stage_dict.keys():
                                 cmd_times.append(stage_dict['duration_m'])
                             elif 'duration_s' in stage_dict.keys():
                                 cmd_times.append(stage_dict['duration_s'])
+                            sides_list.append(side)
                             subject_ids.append(yaml_dict['sid'])
-
-                        if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
-                            sides_list.append('lh')
-                        elif any(rh_str in cmd_entry['cmd'] for rh_str in ['rh', '127 ']):
-                            sides_list.append('rh')
-                        else:
-                            sides_list.append('full')
 
                 else:
                     ## If python3 script, get script name:
@@ -68,14 +72,8 @@ def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
                     elif 'duration_s' in cmd_entry.keys():
                         cmd_times.append(cmd_entry['duration_s'])
 
+                    sides_list.append(side)
                     subject_ids.append(yaml_dict['sid'])
-
-                    if any(lh_str in cmd_entry['cmd'] for lh_str in ['lh', '255 ']):
-                        sides_list.append('lh')
-                    elif any(rh_str in cmd_entry['cmd'] for rh_str in ['rh', '127 ']):
-                        sides_list.append('rh')
-                    else:
-                        sides_list.append('full')
 
     return cmd_names, cmd_times, sides_list, subject_ids
 
