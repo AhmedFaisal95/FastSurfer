@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 
-def get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True):
+def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
     cmd_names = []
     cmd_times = []
     sides_list = []

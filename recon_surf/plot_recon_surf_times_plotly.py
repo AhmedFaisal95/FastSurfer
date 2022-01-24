@@ -18,7 +18,7 @@ from dash import html
 from dash.dependencies import Input, Output
 
 ##TODO: Set relative import once integrated in package
-from plotting_utils import get_nonunique_cmd_execution_times, separate_hemis, get_yaml_data, get_top_x_cmds
+from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds
 
 plotly_colors = px.colors.qualitative.Plotly
 
@@ -218,7 +218,7 @@ if __name__ == "__main__":
         print('[ERROR] No data could be read for processing! Exiting')
         sys.exit()
 
-    cmd_names, cmd_times, sides_list, subject_ids = get_nonunique_cmd_execution_times(yaml_dicts, True)
+    cmd_names, cmd_times, sides_list, subject_ids = extract_cmd_runtime_data(yaml_dicts, True)
 
     df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times, 'subject_id': subject_ids})
     base_df = separate_hemis(df, sides_list)
@@ -388,7 +388,7 @@ if __name__ == "__main__":
 
         yaml_dicts, subject_dirs = get_yaml_data(args.root_dir, subject_selection)
 
-        orig_cmd_names, orig_cmd_times, sides_list, subject_ids = get_nonunique_cmd_execution_times(yaml_dicts)
+        orig_cmd_names, orig_cmd_times, sides_list, subject_ids = extract_cmd_runtime_data(yaml_dicts)
 
         df = pd.DataFrame({'cmd_names': orig_cmd_names, 'cmd_times': orig_cmd_times, 'subject_id': subject_ids})
 
@@ -398,7 +398,7 @@ if __name__ == "__main__":
         if exemplary_subject_selection != 'None' and exemplary_subject_selection is not None:
             exemplary_yaml_dicts, _ = get_yaml_data(args.root_dir, [exemplary_subject_selection])
 
-            cmd_names, cmd_times, sides_list, subject_ids = get_nonunique_cmd_execution_times(exemplary_yaml_dicts)
+            cmd_names, cmd_times, sides_list, subject_ids = extract_cmd_runtime_data(exemplary_yaml_dicts)
             exemplary_df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times, 'subject_id': subject_ids})
             exemplary_df = separate_hemis(exemplary_df, sides_list)
             exemplary_df = exemplary_df.groupby(['cmd_names', 'Side', 'subject_id'], as_index=False).mean()

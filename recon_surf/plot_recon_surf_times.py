@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 ##TODO: Set relative import once integrated in package
-from plotting_utils import get_nonunique_cmd_execution_times, separate_hemis, get_yaml_data, get_top_x_cmds
+from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds
 
 tab10_color_palette_ = sns.color_palette('tab10', 10)
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     ## Extract recon-surf time information:
     print('[INFO] Extracting command execution times...')
-    cmd_names, cmd_times, sides_list, subject_ids = get_nonunique_cmd_execution_times(yaml_dicts, split_recon_all_stages=True)
+    cmd_names, cmd_times, sides_list, subject_ids = extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True)
 
     df = pd.DataFrame({'cmd_names': cmd_names, 'cmd_times': cmd_times, 'subject_id': subject_ids})
 
