@@ -557,15 +557,17 @@ if __name__ == "__main__":
         if not disable_time_threshold_option:
             plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_times < time_threshold].index)
 
-        if plot_type == 'Bar':
-            fig = get_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
-        elif plot_type == 'Box':
-            fig = get_box_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
-        elif plot_type == 'Bar_2':
-            fig = get_bar_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
+        if len(plotting_df) != 0:
+            if plot_type == 'Bar':
+                fig = get_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
+            elif plot_type == 'Box':
+                fig = get_box_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
+            elif plot_type == 'Bar_2':
+                fig = get_bar_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
+        else:
+            fig = plotly.graph_objs.Figure()
 
         cmd_options = np.unique(plotting_df['cmd_names'].values).tolist()
-        new_cmd_multi_dropdown_options = [{'label': cmd_name, 'value': cmd_name} for cmd_name in cmd_options]
 
         return fig, cmd_options, reset_state, reload_cmd_state, load_all_subjs_state, subject_selection, time_threshold, top_x, exemplary_subject_selection, disable_time_threshold_option 
 
