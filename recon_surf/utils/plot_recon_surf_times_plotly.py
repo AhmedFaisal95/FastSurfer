@@ -257,8 +257,6 @@ if __name__ == "__main__":
                         'color': None,
                     }),
 
-        # html.Br(),
-
         html.Div([
                 html.Div([
                           html.Label('Subjects:', style={'font-weight': 'bold'}),
@@ -327,15 +325,18 @@ if __name__ == "__main__":
                                                     ], style={'display': 'inline-block','width': '120px',  'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None, 'height':'30px'}),
                                             ], style={'width':'100%', 'flexWrap': 'wrap','display': 'inline-block', 'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
                                   ], style={'width': None, 'border':'2px black solid' if draw_debug_borders else None}),
-                            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
+                            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%', 'verticalAlign': 'top', 'border':'2px black solid' if draw_debug_borders else None}),
 
-                html.Div(['Commands:',
-                          dcc.Dropdown(
-                              id='cmd_selection',
-                              options=cmd_multi_dropdown_options,
-                              value=default_cmd_options,
-                              multi=True),
-                          ], style={'width': '45%', 'display': 'inline-block',"verticalAlign": "top" , 'border':'2px black solid' if draw_debug_borders else None}),
+                html.Div([
+                    html.Label('Commands:', style={'font-weight': 'bold'}),
+                         html.Div([
+                              dcc.Dropdown(
+                                  id='cmd_selection',
+                                  options=cmd_multi_dropdown_options,
+                                  value=default_cmd_options,
+                                  multi=True),
+                              ], style={'margin-top': '2%', 'width': None, 'display': 'inline-block', 'border':'2px black solid' if draw_debug_borders else None}),
+                         ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
                 ], className='row'),
 
         html.Br(),
