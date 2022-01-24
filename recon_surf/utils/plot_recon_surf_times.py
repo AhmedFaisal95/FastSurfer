@@ -76,14 +76,12 @@ if __name__ == "__main__":
     df = pd.DataFrame({'cmd_name': cmd_names, 'execution_time': execution_times, 'subject_id': subject_ids})
 
     filtered_df = df.copy()
-
     filtered_df = separate_hemis(filtered_df, hemis_list)
 
     ## Apply filters:
     if args.top_x is not None:
-        filtered_df = get_top_x_cmds(filtered_df, args.top_x)
-
-        print('[INFO] Plotting only top {} commands:'.format(x))
+        filtered_df, top_unique_cmds = get_top_x_cmds(filtered_df, args.top_x)
+        print('[INFO] Plotting only top {} commands:'.format(args.top_x))
         print(' - ' + '\n - '.join(top_unique_cmds))
 
     if args.select_cmds is not None:

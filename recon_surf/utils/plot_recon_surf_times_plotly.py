@@ -166,7 +166,6 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects):
 
 def get_box_fig(df, exemplary_subject_selection, num_subjects):
     ##TODO: debug issue of tiny bars (only here in script, not in ipynb)
-    df.to_csv('/tmp/df.csv')
     fig = px.box(df, x='cmd_name', y='execution_time',
                  color='hemi',
                  color_discrete_map={'lh': plotly_colors[4],
@@ -431,7 +430,7 @@ if __name__ == "__main__":
 
         ## Top x cmds:
         if top_x is not None and top_x != 0:
-            plotting_df = get_top_x_cmds(plotting_df, top_x)
+            plotting_df, _ = get_top_x_cmds(plotting_df, top_x)
 
         ## Time threshold:
         if not disable_time_threshold_option:
