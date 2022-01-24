@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 ##TODO: Set relative import once integrated in package
-from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds
+from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds, get_selected_cmds
 
 tab10_color_palette_ = sns.color_palette('tab10', 10)
 
@@ -32,9 +32,6 @@ def plot_box(df):
                          'both': tab10_color_palette_[0],
                          'rh': tab10_color_palette_[2]},
                 hue_order=['lh', 'both', 'rh'])
-
-
-# def get_selected_cmds(plotting_df, selected_cmds):
 
 
 if __name__ == "__main__":
@@ -85,11 +82,7 @@ if __name__ == "__main__":
         print(' - ' + '\n - '.join(top_unique_cmds))
 
     if args.select_cmds is not None:
-        excluded_cmds = [cmd_name for cmd_name in filtered_df.cmd_name.values if cmd_name not in args.select_cmds]
-
-        for excluded_cmd in excluded_cmds:
-            filtered_df = filtered_df.drop(filtered_df[filtered_df.cmd_name == excluded_cmd].index)
-
+        filtered_df = get_selected_cmds(filtered_df, args.select_cmds)
         print('[INFO] Plotting only the desired commands:')
         print(' - ' + '\n - '.join(args.select_cmds))
 

@@ -18,7 +18,7 @@ from dash import html
 from dash.dependencies import Input, Output
 
 ##TODO: Set relative import once integrated in package
-from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds
+from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds, get_selected_cmds
 
 plotly_colors = px.colors.qualitative.Plotly
 
@@ -418,15 +418,11 @@ if __name__ == "__main__":
 
         plotting_df = enforce_custom_side_order(plotting_df)
 
-        ## Selected cmds:
+        ## Apply filters:
         if reload_cmd_state == 1:
-            excluded_cmds = []
-
             reload_cmd_state = 0
         else:
-            excluded_cmds = [cmd_name for cmd_name in plotting_df.cmd_name.values if cmd_name not in cmd_selection]
-        for excluded_cmd in excluded_cmds:
-            plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_name == excluded_cmd].index)
+            plotting_df = get_selected_cmds(plotting_df, cmd_selection)
 
         ## Top x cmds:
         if top_x is not None and top_x != 0:

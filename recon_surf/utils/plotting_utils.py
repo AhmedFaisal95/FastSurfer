@@ -138,3 +138,11 @@ def get_top_x_cmds(plotting_df, x):
         plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_name == cmd_name].index)
 
     return plotting_df, top_unique_cmds
+
+def get_selected_cmds(plotting_df, selected_cmds):
+    excluded_cmds = [cmd_name for cmd_name in plotting_df.cmd_name.values if cmd_name not in selected_cmds]
+
+    for excluded_cmd in excluded_cmds:
+        plotting_df = plotting_df.drop(plotting_df[plotting_df.cmd_name == excluded_cmd].index)
+
+    return plotting_df
