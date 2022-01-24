@@ -18,7 +18,7 @@ from dash import html
 from dash.dependencies import Input, Output
 
 ##TODO: Set relative import once integrated in package
-from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds, get_selected_cmds
+from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds, get_selected_cmds, get_runtimes_exceeding_threshold
 
 plotly_colors = px.colors.qualitative.Plotly
 
@@ -424,13 +424,11 @@ if __name__ == "__main__":
         else:
             plotting_df = get_selected_cmds(plotting_df, cmd_selection)
 
-        ## Top x cmds:
         if top_x is not None and top_x != 0:
             plotting_df, _ = get_top_x_cmds(plotting_df, top_x)
 
-        ## Time threshold:
-        if not disable_time_threshold_option:
-            plotting_df = plotting_df.drop(plotting_df[plotting_df.execution_time < time_threshold].index)
+        if not disable_time_threshold_option and time_threshold != 0:
+            plotting_df = get_runtimes_exceeding_threshold(plotting_df, time_threshold)
 
         if len(plotting_df) != 0:
             if plot_type == 'Bar':

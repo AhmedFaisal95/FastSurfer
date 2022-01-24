@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 ##TODO: Set relative import once integrated in package
-from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds, get_selected_cmds
+from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_data, get_top_x_cmds, get_selected_cmds, get_runtimes_exceeding_threshold
 
 tab10_color_palette_ = sns.color_palette('tab10', 10)
 
@@ -87,8 +87,7 @@ if __name__ == "__main__":
         print(' - ' + '\n - '.join(args.select_cmds))
 
     if args.time_threshold is not None:
-        filtered_df = filtered_df.drop(filtered_df[filtered_df.execution_time < args.time_threshold].index)
-
+        filtered_df = get_runtimes_exceeding_threshold(filtered_df, args.time_threshold)
         print('[INFO] Plotting only commands whose durations exceed {} minutes'.format(args.time_threshold))
 
     ## Plot:
