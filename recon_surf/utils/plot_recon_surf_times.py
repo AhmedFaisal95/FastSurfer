@@ -61,7 +61,7 @@ if __name__ == "__main__":
     else:
         subject_dirs = args.subject_dirs
 
-    yaml_dicts, subject_dirs = get_yaml_data(args.root_dir, subject_dirs)
+    yaml_dicts = get_yaml_data(args.root_dir, subject_dirs)
     if len(yaml_dicts) == 0:
         print('[ERROR] No data could be read for processing! Exiting')
         sys.exit()

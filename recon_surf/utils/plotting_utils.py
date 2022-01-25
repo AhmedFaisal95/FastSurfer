@@ -14,7 +14,7 @@ def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
     hemis_list = []
     subject_ids = []
 
-    for yaml_dict in yaml_dicts:
+    for subject_dir, yaml_dict in yaml_dicts.items():
         for stage_num in range(len(yaml_dict['recon-surf_commands'])):
             entry_list = list(yaml_dict['recon-surf_commands'][stage_num].values())[0]
 
@@ -93,8 +93,7 @@ def separate_hemis(filtered_df, hemis_list):
     return two_sided_filtered_df 
 
 def get_yaml_data(root_dir, subject_dirs):
-    yaml_dicts = []
-    valid_dirs = []
+    yaml_dicts = {}
 
     print('[INFO] Extracting data from the files:')
     for subject_dir in subject_dirs:
@@ -105,16 +104,15 @@ def get_yaml_data(root_dir, subject_dirs):
         try:
             with open(file_path, 'r') as stream:
                 try:
-                    yaml_dicts.append(yaml.load(stream, Loader=CLoader))
+                    yaml_dicts[subject_dir] = yaml.load(stream, Loader=CLoader)
                 except yaml.YAMLError as e:
                     print(e)
-            valid_dirs.append(subject_dir)
 
         except FileNotFoundError as e:
             print(e)
             print('[INFO] Skipping this file...')
 
-    return yaml_dicts, valid_dirs
+    return yaml_dicts
 
 def get_top_x_cmds(plotting_df, x):
     means_df = plotting_df.groupby(['cmd_name', 'hemi'], as_index=False).mean()

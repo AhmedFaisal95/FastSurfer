@@ -22,6 +22,7 @@ from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_da
 
 plotly_colors = px.colors.qualitative.Plotly
 
+all_subjects_yaml_dicts = None
 
 def enforce_custom_side_order(df):
     '''
@@ -211,16 +212,18 @@ if __name__ == "__main__":
     ## ---------------------------------------------------------------------------
 
     print('[INFO] Extracting initial data...')
-    all_subject_dirs = os.listdir(args.root_dir)
-    yaml_dicts, all_subject_dirs = get_yaml_data(args.root_dir, all_subject_dirs)
-    if len(yaml_dicts) == 0:
+    all_subdirs = os.listdir(args.root_dir)
+    all_subjects_yaml_dicts = get_yaml_data(args.root_dir, all_subdirs)
+    if len(all_subjects_yaml_dicts) == 0:
         print('[ERROR] No data could be read for processing! Exiting')
         sys.exit()
 
-    cmd_names, execution_time, hemis_list, subject_ids = extract_cmd_runtime_data(yaml_dicts, True)
+    all_subject_dirs = list(all_subjects_yaml_dicts.keys())
 
-    df = pd.DataFrame({'cmd_name': cmd_names, 'execution_time': execution_time, 'subject_id': subject_ids})
-    base_df = separate_hemis(df, hemis_list)
+    cmd_names, execution_time, hemis_list, subject_ids = extract_cmd_runtime_data(all_subjects_yaml_dicts, True)
+
+    base_df = pd.DataFrame({'cmd_name': cmd_names, 'execution_time': execution_time, 'subject_id': subject_ids})
+    base_df = separate_hemis(base_df, hemis_list)
     base_df = base_df.groupby(['cmd_name', 'hemi'], as_index=False).mean()
     base_df = enforce_custom_side_order(base_df)
 
@@ -395,17 +398,16 @@ if __name__ == "__main__":
             subject_selection = all_subject_dirs
             load_all_subjs_state = 0
 
-        yaml_dicts, subject_dirs = get_yaml_data(args.root_dir, subject_selection)
+        yaml_reading_time_start = time.time()
+        yaml_dicts = {subject_dir: all_subjects_yaml_dicts[subject_dir] for subject_dir in subject_selection}
 
         orig_cmd_names, orig_execution_time, hemis_list, subject_ids = extract_cmd_runtime_data(yaml_dicts)
 
-        df = pd.DataFrame({'cmd_name': orig_cmd_names, 'execution_time': orig_execution_time, 'subject_id': subject_ids})
-
-        plotting_df = df.copy()
+        plotting_df = pd.DataFrame({'cmd_name': orig_cmd_names, 'execution_time': orig_execution_time, 'subject_id': subject_ids})
         plotting_df = separate_hemis(plotting_df, hemis_list)
 
         if exemplary_subject_selection != 'None' and exemplary_subject_selection is not None:
-            exemplary_yaml_dicts, _ = get_yaml_data(args.root_dir, [exemplary_subject_selection])
+            exemplary_yaml_dicts = all_subjects_yaml_dicts[exemplary_subject_selection]
 
             cmd_names, execution_time, hemis_list, subject_ids = extract_cmd_runtime_data(exemplary_yaml_dicts)
             exemplary_df = pd.DataFrame({'cmd_name': cmd_names, 'execution_time': execution_time, 'subject_id': subject_ids})
