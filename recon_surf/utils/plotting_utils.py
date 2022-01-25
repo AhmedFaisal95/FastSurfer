@@ -2,6 +2,7 @@
 
 import os
 import yaml
+from yaml import CLoader
 
 import numpy as np
 import pandas as pd
@@ -104,7 +105,7 @@ def get_yaml_data(root_dir, subject_dirs):
         try:
             with open(file_path, 'r') as stream:
                 try:
-                    yaml_dicts.append(yaml.safe_load(stream))
+                    yaml_dicts.append(yaml.load(stream, Loader=CLoader))
                 except yaml.YAMLError as e:
                     print(e)
             valid_dirs.append(subject_dir)
