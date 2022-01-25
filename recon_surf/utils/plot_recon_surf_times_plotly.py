@@ -398,7 +398,6 @@ if __name__ == "__main__":
             subject_selection = all_subject_dirs
             load_all_subjs_state = 0
 
-        yaml_reading_time_start = time.time()
         yaml_dicts = {subject_dir: all_subjects_yaml_dicts[subject_dir] for subject_dir in subject_selection}
 
         orig_cmd_names, orig_execution_time, hemis_list, subject_ids = extract_cmd_runtime_data(yaml_dicts)
