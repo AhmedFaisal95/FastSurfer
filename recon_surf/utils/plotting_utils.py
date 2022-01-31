@@ -148,6 +148,6 @@ def get_selected_cmds(plotting_df, selected_cmds):
     return plotting_df
 
 def get_runtimes_exceeding_threshold(plotting_df, time_threshold):
-    plotting_df = plotting_df.drop(plotting_df[plotting_df.execution_time < time_threshold].index)
+    plotting_df = plotting_df.drop(plotting_df[np.abs(plotting_df.execution_time) < time_threshold].index)
 
     return plotting_df
