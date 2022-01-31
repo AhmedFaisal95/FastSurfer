@@ -7,14 +7,11 @@ import yaml
 import numpy as np
 import pandas as pd
 
-import pandas as pd
-
 import plotly
 import plotly.express as px
 
 import dash
-from dash import dcc
-from dash import html
+from dash import dcc, html
 from dash.dependencies import Input, Output
 
 ##TODO: Set relative import once integrated in package
@@ -72,23 +69,6 @@ def compute_comparison(df, exemplary_df):
     comparison_df = pd.DataFrame(rows_list, columns=cols)
 
     return comparison_df
-
-def update_data(fig, df):
-    temp = px.histogram(df, x='cmd_name', y='execution_time',
-                        color='hemi', barmode='group', histfunc='avg',
-                        color_discrete_map={'lh': plotly_colors[4],
-                                            'both': plotly_colors[0],
-                                            'rh': plotly_colors[2]},
-                        )
-    if len(fig.data) == 0:
-        for i, trace_data in enumerate(temp.data):
-            fig.add_trace(trace_data)
-    else:
-        for i, trace_data in enumerate(temp.data):
-            fig.data[i].y = trace_data.y
-            fig.data[i].x = trace_data.x
-
-    return fig
 
 def get_fig(df, exemplary_subject_selection, num_subjects):
     # df.loc[(df['cmd_name'] == 'mris_anatomical_stats') & (df['hemi'] == 'lh'), 'execution_time'] *= 20    ## data manipulated to test max ordering

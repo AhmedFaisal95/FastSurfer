@@ -70,23 +70,6 @@ def compute_comparison(df, exemplary_df):
 
     return comparison_df
 
-def update_data(fig, df):
-    temp = px.histogram(df, x='cmd_name', y='execution_time',
-                        color='hemi', barmode='group', histfunc='avg',
-                        color_discrete_map={'lh': plotly_colors[4],
-                                            'both': plotly_colors[0],
-                                            'rh': plotly_colors[2]},
-                        )
-    if len(fig.data) == 0:
-        for i, trace_data in enumerate(temp.data):
-            fig.add_trace(trace_data)
-    else:
-        for i, trace_data in enumerate(temp.data):
-            fig.data[i].y = trace_data.y
-            fig.data[i].x = trace_data.x
-
-    return fig
-
 def get_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
     if orient == 'vertical':
         x = 'cmd_name'
