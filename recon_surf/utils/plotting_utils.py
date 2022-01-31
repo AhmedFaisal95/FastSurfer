@@ -117,6 +117,7 @@ def get_yaml_data(root_dir, subject_dirs):
 def get_top_x_cmds(plotting_df, x):
     means_df = plotting_df.groupby(['cmd_name', 'hemi'], as_index=False).mean()
     means_df = means_df.loc[means_df['execution_time'] == means_df['execution_time']]   ## Remove NaN entries produced by groupby
+    means_df['execution_time'] = means_df['execution_time'].apply(lambda x: np.abs(x))
 
     ordered_means_df = means_df.loc[reversed(means_df['execution_time'].sort_values().index)]
     top_unique_cmds = []
