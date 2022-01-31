@@ -233,19 +233,12 @@ if __name__ == "__main__":
         default_cmd_options = []
 
     subject_options = [{'label': subject_id, 'value': subject_id} for subject_id in all_subject_dirs]
-    # default_subject_dirs = ['382249']
     default_subject_dirs = all_subject_dirs
 
     exemplary_subject_options = subject_options.copy()
     exemplary_subject_options.append({'label': 'None', 'value': 'None'})
 
-    # draw_debug_borders = True
     draw_debug_borders = False
-
-
-    ##TODO: Add groove-style borders around main divs, with some padding around and maintaining
-    ## current distances between labels and elements
-    ## Use CSS: 'border-style': 'groove'
 
     ## Dash App Layout:
     ## ---------------------------------------------------------------------------
@@ -335,7 +328,8 @@ if __name__ == "__main__":
                                             ], style={'width':'100%', 'flexWrap': 'wrap','display': 'inline-block', 'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None},
                                                                 title='Loads all valid subject data found in the root directory'),
                                   ], style={'width': None, 'border':'2px black solid' if draw_debug_borders else None}),
-                            ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%', 'verticalAlign': 'top', 'border':'2px black solid' if draw_debug_borders else None}),
+                            ], style={'width': '45%', 'display': 'inline-block', 'margin-left': '2%', 'verticalAlign': 'top', 'border':'2px black solid' if draw_debug_borders else None,
+                             'border-style':'groove', 'padding': '10px'}),
 
                 html.Div([
                     html.Label('Commands:', style={'font-weight': 'bold'},
@@ -347,7 +341,8 @@ if __name__ == "__main__":
                                   value=default_cmd_options,
                                   multi=True),
                               ], style={'margin-top': '2%', 'width': None, 'display': 'inline-block', 'border':'2px black solid' if draw_debug_borders else None}),
-                         ], style={'width': '45%', 'display': 'inline-block', 'margin-right': '2%', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
+                         ], style={'width': '45%', 'display': 'inline-block', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None,
+                             'border-style':'groove', 'padding': '10px'}),
                 ], className='row'),
 
         html.Br(),
