@@ -265,16 +265,18 @@ if __name__ == "__main__":
                                                         html.Div([
                                                                 'Time threshold: ',
                                                                 dcc.Input(id='time_threshold',
-                                                                          value=0, type='number'),
-                                                                ], style={'width': '80%', 'border':'2px black solid' if draw_debug_borders else None},
+                                                                          value=0, type='number',
+                                                                          style={'float':'right'}),
+                                                                ], style={'margin-top': '2%','width': '80%', 'border':'2px black solid' if draw_debug_borders else None},
                                                                 title='The plot displays only commands whose execution times exceed this threshold'),
                                                         html.Div([
                                                                 'Plot top commands: ',
                                                                 dcc.Input(id='top_x',
-                                                                          value=0, type='number'),
+                                                                          value=0, type='number',
+                                                                          style={'float':'right'}),
                                                                 ], style={'margin-top': '2%','width': '80%', 'border':'2px black solid' if draw_debug_borders else None},
                                                                 title='If specified, only the commands with the highest execution times are plotted. This field specifies how many'),
-                                                        ], style={'display': 'inline-block', 'flexWrap': 'wrap','width': '50%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                        ], style={'display': 'inline-block', 'flexWrap': 'wrap','width': '50%', 'padding-right':'1%','border':'2px black solid' if draw_debug_borders else None}),
 
                                               html.Div([
                                                   'Plot Type:',
@@ -322,7 +324,7 @@ if __name__ == "__main__":
                                   multi=True),
                               ], style={'margin-top': '2%', 'width': None, 'display': 'inline-block', 'border':'2px black solid' if draw_debug_borders else None}),
                          ], style={'width': '45%', 'display': 'inline-block', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None,
-                             'border-style':'groove', 'padding': '10px'}),
+                                   'border-style':'groove', 'padding': '10px'}),
                 ], className='row'),
 
         html.Br(),
@@ -331,7 +333,8 @@ if __name__ == "__main__":
                 dcc.Graph(
                 id='recon-surf-times-plot',
                 figure=plotly.graph_objs.Figure()
-                )], style={'display': 'flex', 'justify-content':'center', 'border':'2px black solid' if draw_debug_borders else None}),
+                )], style={'display': 'flex', 'justify-content':'center', 'border':'2px black solid' if draw_debug_borders else None,
+                           'border-style':'groove', 'margin-left':'2%', 'margin-right':'3%'}),
         ])
 
     @app.callback(
