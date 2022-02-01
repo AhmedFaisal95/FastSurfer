@@ -104,14 +104,16 @@ def get_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
                          categoryarray=order_array,
                          tickangle=280,
                          showgrid=True,
-                         tickfont={'size': None},
+                         ticks='outside',
+                         ticklen=7,
                          title=None,
                          automargin=True)
     elif orient == 'horizontal':
         fig.update_yaxes(categoryorder='array',
                          categoryarray=order_array,
                          showgrid=True,
-                         tickfont={'size': None},
+                         ticks='outside',
+                         ticklen=7,
                          title=None,
                          automargin=True)
 
@@ -165,13 +167,15 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects, orient='horizonta
                          categoryarray=order_array,
                          tickangle=280,
                          showgrid=True,
-                         tickfont={'size': None},
+                         ticks='outside',
+                         ticklen=7,
                          title=None)
     elif orient == 'horizontal':
         fig.update_yaxes(categoryorder='array',
                          categoryarray=order_array,
                          showgrid=True,
-                         tickfont={'size': None},
+                         ticks='outside',
+                         ticklen=7,
                          title=None,
                          automargin=True)
 
@@ -197,7 +201,8 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects, orient='horizonta
                                      'both': plotly_colors[0],
                                      'rh': plotly_colors[2]},
                  points='all',
-                 hover_data={'subject_id': True}
+                 hover_data={'subject_id': True},
+                 boxmode='group'
                  )
 
     fig.update_layout(
@@ -215,13 +220,15 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects, orient='horizonta
                          categoryarray=order_array,
                          tickangle=280,
                          showgrid=True,
-                         tickfont={'size': None},
+                         ticks='outside',
+                         ticklen=7,
                          title=None)
     elif orient == 'horizontal':
         fig.update_yaxes(categoryorder='array',
                          categoryarray=order_array,
                          showgrid=True,
-                         tickfont={'size': None},
+                         ticks='outside',
+                         ticklen=7,
                          title=None)
 
     no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
@@ -229,6 +236,11 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects, orient='horizonta
         fig.update_yaxes(title='Time Difference (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
     elif orient == 'horizontal':
         fig.update_xaxes(title='Time Difference (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
+
+    fig.update_layout(
+        boxgap=0.0,
+        boxgroupgap=0.0
+    )
 
     return fig
 
@@ -385,6 +397,7 @@ if __name__ == "__main__":
                           html.Div([
                                     dcc.Dropdown(id='exemplary_subject_selection',
                                                  options=exemplary_subject_options,
+                                                 disabled=True,
                                                  value='None'),
                                     ], style={'margin-top': '2%','border':'2px black solid' if draw_debug_borders else None}),
 
@@ -397,31 +410,46 @@ if __name__ == "__main__":
                                                         html.Div([
                                                                 'Diff. threshold: ',
                                                                 dcc.Input(id='diff_threshold',
-                                                                          value=0, type='number'),
-                                                                ], style={'width': '80%', 'border':'2px black solid' if draw_debug_borders else None},
+                                                                          value=0, type='number',
+                                                                          style={'float':'right'}),
+                                                                ], style={'margin-top': '2%','width': '80%', 'border':'2px black solid' if draw_debug_borders else None},
                                                                 title='The plot displays only commands whose execution times exceed this threshold'),
                                                         html.Div([
                                                                 'Plot top commands: ',
                                                                 dcc.Input(id='top_x',
-                                                                          value=0, type='number'),
+                                                                          value=0, type='number',
+                                                                          style={'float':'right'}),
                                                                 ], style={'margin-top': '2%','width': '80%', 'border':'2px black solid' if draw_debug_borders else None},
                                                                 title='If specified, only the commands with the highest execution times are plotted. This field specifies how many.\nNOTE: Command execution times are ranked based on their absolute values'),
-                                                        ], style={'display': 'inline-block', 'flexWrap': 'wrap','width': '50%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                        ], style={'display': 'inline-block', 'flexWrap': 'wrap','width': '50%', 'padding-right':'1%','border':'2px black solid' if draw_debug_borders else None}),
 
                                               html.Div([
-                                                  'Plot Type:',
-                                                       dcc.RadioItems(
-                                                        id='plot_type',
-                                                          options=[
-                                                              {'label': 'Bar', 'value': 'Bar'},
-                                                              {'label': 'Box', 'value': 'Box'},
-                                                              {'label': 'Bar (error bounds)', 'value': 'Bar_2'},
-                                                          ],
-                                                          value='Bar')
-                                                       ], style={'display': 'inline-block', 'flexWrap': 'wrap', 'verticalAlign': 'top', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                        html.Div([
+                                                                 'Plot Type:',
+                                                                      dcc.RadioItems(
+                                                                       id='plot_type',
+                                                                         options=[
+                                                                             {'label': 'Bar', 'value': 'Bar'},
+                                                                             {'label': 'Box', 'value': 'Box'},
+                                                                             {'label': 'Bar (error bounds)', 'value': 'Bar_2'},
+                                                                         ],
+                                                                         value='Bar'),
+                                                                 ], style={'margin-top': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
+
+                                                        html.Div([
+                                                                 'Plot Orientiation:',
+                                                                      dcc.RadioItems(
+                                                                       id='plot_orientation',
+                                                                         options=[
+                                                                             {'label': 'Horizontal', 'value': 'horizontal'},
+                                                                             {'label': 'Vertical', 'value': 'vertical'},
+                                                                         ],
+                                                                         value='vertical')
+                                                                 ], style={'margin-top': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                       ], style={'display': 'inline-block', 'flexWrap': 'wrap', 'verticalAlign': 'top', 'border':'2px black solid' if draw_debug_borders else None}),
 
 
-                                              ], style={'margin-top': '2%','width': '100%', 'border':'2px black solid' if draw_debug_borders else None}, className='row'),
+                                              ], style={'margin-top': '0%','width': '100%', 'border':'2px black solid' if draw_debug_borders else None}, className='row'),
                                   html.Br(),
 
                                   html.Label('Controls:', style={'font-weight': 'bold'}),
@@ -454,7 +482,7 @@ if __name__ == "__main__":
                                   multi=True),
                               ], style={'margin-top': '2%', 'width': None, 'display': 'inline-block', 'border':'2px black solid' if draw_debug_borders else None}),
                          ], style={'width': '45%', 'display': 'inline-block', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None,
-                             'border-style':'groove', 'padding': '10px'}),
+                                   'border-style':'groove', 'padding': '10px'}),
                 ], className='row'),
 
         html.Br(),
@@ -463,7 +491,8 @@ if __name__ == "__main__":
                 dcc.Graph(
                 id='recon-surf-times-plot',
                 figure=plotly.graph_objs.Figure()
-                )], style={'display': 'flex', 'justify-content':'center', 'border':'2px black solid' if draw_debug_borders else None}),
+                )], style={'display': 'flex', 'justify-content':'center', 'border':'2px black solid' if draw_debug_borders else None,
+                           'border-style':'groove', 'margin-left':'2%', 'margin-right':'3%'}),
         ])
 
     @app.callback(
@@ -477,6 +506,7 @@ if __name__ == "__main__":
         Output('top_x', 'value'),
         Output('exemplary_subject_selection', 'value'),
         Output('diff_threshold', 'disabled'),
+        Output('exemplary_subject_selection', 'disabled'),
         Input('subject_selection', 'value'),
         Input('cmd_selection', 'value'),
         Input('diff_threshold', 'value'),
@@ -485,10 +515,11 @@ if __name__ == "__main__":
         Input('reload_cmd_state', 'n_clicks'),
         Input('load_all_subjs_state', 'n_clicks'),
         Input('exemplary_subject_selection', 'value'),
-        Input('plot_type', 'value'))
+        Input('plot_type', 'value'),
+        Input('plot_orientation', 'value'))
     def update_graph(subject_selection, cmd_selection,
                      diff_threshold, top_x, reset_state, reload_cmd_state, load_all_subjs_state,
-                     exemplary_subject_selection, plot_type):
+                     exemplary_subject_selection, plot_type, plot_orientation):
 
         disable_diff_threshold_option = False
 
@@ -523,6 +554,7 @@ if __name__ == "__main__":
         ## NOTE: at the moment, always df_2 - df_1:
         plotting_df= get_execution_time_diff_df(df_1, df_2)
 
+        ## TODO: incorporate or remove exemplary subject comaprison
         # if exemplary_subject_selection != 'None' and exemplary_subject_selection is not None:
         #     exemplary_yaml_dicts = all_subjects_yaml_dicts[exemplary_subject_selection]
 
@@ -551,17 +583,17 @@ if __name__ == "__main__":
 
         if len(plotting_df) != 0:
             if plot_type == 'Bar':
-                fig = get_fig(plotting_df, exemplary_subject_selection, plotting_df.subject_id.unique().size)
+                fig = get_fig(plotting_df, exemplary_subject_selection, plotting_df.subject_id.unique().size, plot_orientation)
             elif plot_type == 'Box':
-                fig = get_box_fig(plotting_df, exemplary_subject_selection, plotting_df.subject_id.unique().size)
+                fig = get_box_fig(plotting_df, exemplary_subject_selection, plotting_df.subject_id.unique().size, plot_orientation)
             elif plot_type == 'Bar_2':
-                fig = get_bar_fig(plotting_df, exemplary_subject_selection, plotting_df.subject_id.unique().size)
+                fig = get_bar_fig(plotting_df, exemplary_subject_selection, plotting_df.subject_id.unique().size, plot_orientation)
         else:
             fig = plotly.graph_objs.Figure()
 
         cmd_options = np.unique(plotting_df['cmd_name'].values).tolist()
 
-        return fig, cmd_options, reset_state, reload_cmd_state, load_all_subjs_state, subject_selection, diff_threshold, top_x, exemplary_subject_selection, disable_diff_threshold_option 
+        return fig, cmd_options, reset_state, reload_cmd_state, load_all_subjs_state, subject_selection, diff_threshold, top_x, exemplary_subject_selection, disable_diff_threshold_option, True
 
 
     app.run_server(host='0.0.0.0', port='8060', debug=True)
