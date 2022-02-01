@@ -70,9 +70,15 @@ def compute_comparison(df, exemplary_df):
 
     return comparison_df
 
-def get_fig(df, exemplary_subject_selection, num_subjects):
-    # df.loc[(df['cmd_name'] == 'mris_anatomical_stats') & (df['hemi'] == 'lh'), 'execution_time'] *= 20    ## data manipulated to test max ordering
-    fig = px.histogram(df, x='cmd_name', y='execution_time',
+def get_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
+    if orient == 'vertical':
+        x = 'cmd_name'
+        y = 'execution_time'
+    elif orient == 'horizontal':
+        x = 'execution_time'
+        y = 'cmd_name'
+
+    fig = px.histogram(df, x=x, y=y,
                        color='hemi', barmode='group', histfunc='avg',
                        color_discrete_map={'lh': plotly_colors[4],
                                            'both': plotly_colors[0],
@@ -92,30 +98,53 @@ def get_fig(df, exemplary_subject_selection, num_subjects):
 
     means_df = df.groupby(['cmd_name', 'hemi'], as_index=False).mean()   # only used to obtain desired order_array
     order_array = means_df.groupby(['cmd_name'], as_index=False).max().sort_values('execution_time')['cmd_name']
-    fig.update_xaxes(categoryorder='array',
-                     categoryarray=order_array,
-                     tickangle=280,
-                     showgrid=True,
-                     tickfont={'size': None},
-                     title=None,
-                     automargin=True)
+
+    if orient == 'vertical':
+        fig.update_xaxes(categoryorder='array',
+                         categoryarray=order_array,
+                         tickangle=280,
+                         showgrid=True,
+                         ticks='outside',
+                         ticklen=7,
+                         title=None,
+                         automargin=True)
+    elif orient == 'horizontal':
+        fig.update_yaxes(categoryorder='array',
+                         categoryarray=order_array,
+                         showgrid=True,
+                         ticks='outside',
+                         ticklen=7,
+                         title=None,
+                         automargin=True)
 
     no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
-    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
+    if orient == 'vertical':
+        fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
+    elif orient == 'horizontal':
+        fig.update_xaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
 
     return fig
 
-def get_bar_fig(df, exemplary_subject_selection, num_subjects):
+def get_bar_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
     means_df = df.groupby(['cmd_name', 'hemi'], as_index=False).mean()
     stds_df = df.groupby(['cmd_name', 'hemi'], as_index=False).std()
 
-    fig = px.bar(means_df, x='cmd_name', y='execution_time',
-                 color='hemi', barmode='group',
-                 color_discrete_map={'lh': plotly_colors[4],
-                                     'both': plotly_colors[0],
-                                     'rh': plotly_colors[2]},
-                 error_y=stds_df['execution_time'].values,
-                 )
+    if orient == 'vertical':
+        fig = px.bar(means_df, x='cmd_name', y='execution_time',
+                     color='hemi', barmode='group',
+                     color_discrete_map={'lh': plotly_colors[4],
+                                         'both': plotly_colors[0],
+                                         'rh': plotly_colors[2]},
+                     error_y=stds_df['execution_time'].values,
+                     )
+    elif orient == 'horizontal':
+        fig = px.bar(means_df, x='execution_time', y='cmd_name',
+                     color='hemi', barmode='group',
+                     color_discrete_map={'lh': plotly_colors[4],
+                                         'both': plotly_colors[0],
+                                         'rh': plotly_colors[2]},
+                     error_x=stds_df['execution_time'].values,
+                     )
 
     fig.update_layout(
         title_text='recon-surf Command Execution Times (Average over {} runs)'.format(num_subjects),
@@ -133,27 +162,47 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects):
     ## TODO: debug FutureWarning due to max op
     order_array = means_df.groupby(['cmd_name'], as_index=False).max().sort_values('execution_time')['cmd_name']
 
-    fig.update_xaxes(categoryorder='array',
-                     categoryarray=order_array,
-                     tickangle=280,
-                     showgrid=True,
-                     tickfont={'size': None},
-                     title=None)
+    if orient == 'vertical':
+        fig.update_xaxes(categoryorder='array',
+                         categoryarray=order_array,
+                         tickangle=280,
+                         showgrid=True,
+                         ticks='outside',
+                         ticklen=7,
+                         title=None)
+    elif orient == 'horizontal':
+        fig.update_yaxes(categoryorder='array',
+                         categoryarray=order_array,
+                         showgrid=True,
+                         ticks='outside',
+                         ticklen=7,
+                         title=None,
+                         automargin=True)
 
     no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
-    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
+    if orient == 'vertical':
+        fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
+    elif orient == 'horizontal':
+        fig.update_xaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
 
     return fig
 
-def get_box_fig(df, exemplary_subject_selection, num_subjects):
-    ##TODO: debug issue of tiny bars (only here in script, not in ipynb)
-    fig = px.box(df, x='cmd_name', y='execution_time',
+def get_box_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
+    if orient == 'vertical':
+        x = 'cmd_name'
+        y = 'execution_time'
+    elif orient == 'horizontal':
+        x = 'execution_time'
+        y = 'cmd_name'
+
+    fig = px.box(df, x=x, y=y,
                  color='hemi',
                  color_discrete_map={'lh': plotly_colors[4],
                                      'both': plotly_colors[0],
                                      'rh': plotly_colors[2]},
                  points='all',
-                 hover_data={'subject_id': True}
+                 hover_data={'subject_id': True},
+                 boxmode='group',
                  )
 
     fig.update_layout(
@@ -162,19 +211,36 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects):
         width=1200, height=800,
         legend=dict(title=None, orientation="h", y=1,
                     yanchor="bottom", x=0.5, xanchor="center"
-        )
+        ),
     )
 
     order_array = df.groupby(['cmd_name'], as_index=False).max().sort_values('execution_time')['cmd_name']
-    fig.update_xaxes(categoryorder='array',
-                     categoryarray=order_array,
-                     tickangle=280,
-                     showgrid=True,
-                     tickfont={'size': None},
-                     title=None)
+    if orient == 'vertical':
+        fig.update_xaxes(categoryorder='array',
+                         categoryarray=order_array,
+                         tickangle=280,
+                         showgrid=True,
+                         ticks='outside',
+                         ticklen=7,
+                         title=None)
+    elif orient == 'horizontal':
+        fig.update_yaxes(categoryorder='array',
+                         categoryarray=order_array,
+                         showgrid=True,
+                         ticks='outside',
+                         ticklen=7,
+                         title=None)
 
     no_exemplary_subject_selection = exemplary_subject_selection == 'None' or exemplary_subject_selection is None
-    fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
+    if orient == 'vertical':
+        fig.update_yaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
+    elif orient == 'horizontal':
+        fig.update_xaxes(title='Time (m)' if no_exemplary_subject_selection else 'Difference to exemplary subject: {}'.format(exemplary_subject_selection))
+
+    fig.update_layout(
+        boxgap=0.0,
+        boxgroupgap=0.0
+    )
 
     return fig
 
@@ -279,19 +345,32 @@ if __name__ == "__main__":
                                                         ], style={'display': 'inline-block', 'flexWrap': 'wrap','width': '50%', 'padding-right':'1%','border':'2px black solid' if draw_debug_borders else None}),
 
                                               html.Div([
-                                                  'Plot Type:',
-                                                       dcc.RadioItems(
-                                                        id='plot_type',
-                                                          options=[
-                                                              {'label': 'Bar', 'value': 'Bar'},
-                                                              {'label': 'Box', 'value': 'Box'},
-                                                              {'label': 'Bar (error bounds)', 'value': 'Bar_2'},
-                                                          ],
-                                                          value='Bar')
-                                                       ], style={'display': 'inline-block', 'flexWrap': 'wrap', 'verticalAlign': 'top', 'margin-left': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                        html.Div([
+                                                                 'Plot Type:',
+                                                                      dcc.RadioItems(
+                                                                       id='plot_type',
+                                                                         options=[
+                                                                             {'label': 'Bar', 'value': 'Bar'},
+                                                                             {'label': 'Box', 'value': 'Box'},
+                                                                             {'label': 'Bar (error bounds)', 'value': 'Bar_2'},
+                                                                         ],
+                                                                         value='Bar'),
+                                                                 ], style={'margin-top': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
+
+                                                        html.Div([
+                                                                 'Plot Orientiation:',
+                                                                      dcc.RadioItems(
+                                                                       id='plot_orientation',
+                                                                         options=[
+                                                                             {'label': 'Horizontal', 'value': 'horizontal'},
+                                                                             {'label': 'Vertical', 'value': 'vertical'},
+                                                                         ],
+                                                                         value='vertical')
+                                                                 ], style={'margin-top': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
+                                                       ], style={'display': 'inline-block', 'flexWrap': 'wrap', 'verticalAlign': 'top', 'border':'2px black solid' if draw_debug_borders else None}),
 
 
-                                              ], style={'margin-top': '2%','width': '100%', 'border':'2px black solid' if draw_debug_borders else None}, className='row'),
+                                              ], style={'margin-top': '0%','width': '100%', 'border':'2px black solid' if draw_debug_borders else None}, className='row'),
                                   html.Br(),
 
                                   html.Label('Controls:', style={'font-weight': 'bold'}),
@@ -356,10 +435,11 @@ if __name__ == "__main__":
         Input('reload_cmd_state', 'n_clicks'),
         Input('load_all_subjs_state', 'n_clicks'),
         Input('exemplary_subject_selection', 'value'),
-        Input('plot_type', 'value'))
+        Input('plot_type', 'value'),
+        Input('plot_orientation', 'value'))
     def update_graph(subject_selection, cmd_selection,
                      time_threshold, top_x, reset_state, reload_cmd_state, load_all_subjs_state,
-                     exemplary_subject_selection, plot_type):
+                     exemplary_subject_selection, plot_type, plot_orientation):
 
         disable_time_threshold_option = False
 
@@ -411,11 +491,11 @@ if __name__ == "__main__":
 
         if len(plotting_df) != 0:
             if plot_type == 'Bar':
-                fig = get_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
+                fig = get_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts), plot_orientation)
             elif plot_type == 'Box':
-                fig = get_box_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
+                fig = get_box_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts), plot_orientation)
             elif plot_type == 'Bar_2':
-                fig = get_bar_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts))
+                fig = get_bar_fig(plotting_df, exemplary_subject_selection, len(yaml_dicts), plot_orientation)
         else:
             fig = plotly.graph_objs.Figure()
 
