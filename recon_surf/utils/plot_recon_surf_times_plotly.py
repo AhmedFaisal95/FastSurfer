@@ -200,7 +200,7 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects, orient='horizonta
                  color_discrete_map={'lh': plotly_colors[4],
                                      'both': plotly_colors[0],
                                      'rh': plotly_colors[2]},
-                 points='all',
+                 # points='all',
                  hover_data={'subject_id': True},
                  boxmode='group',
                  )
