@@ -15,23 +15,51 @@ from plotting_utils import extract_cmd_runtime_data, separate_hemis, get_yaml_da
 tab10_color_palette_ = sns.color_palette('tab10', 10)
 
 
-def plot_bar(df):
-    sns.barplot(x='cmd_name', y='execution_time', data=df,
-                order=df.groupby('cmd_name').mean()['execution_time'].sort_values().index,
-                hue='hemi', ci='sd', capsize=.1,
-                palette={'lh': tab10_color_palette_[1],
-                         'both': tab10_color_palette_[0],
-                         'rh': tab10_color_palette_[2]},
-                hue_order=['lh', 'both', 'rh'])
+def plot_bar(df, orient='horizontal'):
+    if orient == 'vertical':
+        sns.barplot(x='cmd_name', y='execution_time', data=df,
+                    order=df.groupby('cmd_name').mean()['execution_time'].sort_values().index,
+                    hue='hemi', ci='sd', capsize=.1,
+                    palette={'lh': tab10_color_palette_[1],
+                             'both': tab10_color_palette_[0],
+                             'rh': tab10_color_palette_[2]},
+                    hue_order=['lh', 'both', 'rh'])
+        plt.ylabel('Time (minutes)')
+        plt.xlabel(None)
+        plt.xticks(rotation='80')
+    elif orient == 'horizontal':
+        sns.barplot(x='execution_time', y='cmd_name', data=df,
+                    order=df.groupby('cmd_name').mean()['execution_time'].sort_values(ascending=False).index,
+                    hue='hemi', ci='sd', capsize=.1,
+                    palette={'lh': tab10_color_palette_[1],
+                             'both': tab10_color_palette_[0],
+                             'rh': tab10_color_palette_[2]},
+                    hue_order=['lh', 'both', 'rh'])
+        plt.ylabel(None)
+        plt.xlabel('Time (minutes)')
 
-def plot_box(df):
-    sns.boxplot(x='cmd_name', y='execution_time', data=df,
-                order=df.groupby('cmd_name').mean()['execution_time'].sort_values().index,
-                hue='hemi',
-                palette={'lh': tab10_color_palette_[1],
-                         'both': tab10_color_palette_[0],
-                         'rh': tab10_color_palette_[2]},
-                hue_order=['lh', 'both', 'rh'])
+def plot_box(df, orient='horizontal'):
+    if orient == 'vertical':
+        sns.boxplot(x='cmd_name', y='execution_time', data=df,
+                    order=df.groupby('cmd_name').mean()['execution_time'].sort_values().index,
+                    hue='hemi',
+                    palette={'lh': tab10_color_palette_[1],
+                             'both': tab10_color_palette_[0],
+                             'rh': tab10_color_palette_[2]},
+                    hue_order=['lh', 'both', 'rh'])
+        plt.ylabel('Time (minutes)')
+        plt.xlabel(None)
+        plt.xticks(rotation='80')
+    elif orient == 'horizontal':
+        sns.boxplot(x='execution_time', y='cmd_name', data=df,
+                    order=df.groupby('cmd_name').mean()['execution_time'].sort_values(ascending=False).index,
+                    hue='hemi',
+                    palette={'lh': tab10_color_palette_[1],
+                             'both': tab10_color_palette_[0],
+                             'rh': tab10_color_palette_[2]},
+                    hue_order=['lh', 'both', 'rh'])
+        plt.ylabel(None)
+        plt.xlabel('Time (minutes)')
 
 
 if __name__ == "__main__":
@@ -48,6 +76,8 @@ if __name__ == "__main__":
                         help='If given, only the listed cmds are plotted')
     parser.add_argument('-t', '--time_threshold', type=float, default=None,
                         help='If given, only the cmds whose execution times exceed t are plotted')
+    parser.add_argument('-o', '--orient', type=str, default='vertical',
+                        help='Specifies the orientation of the plot: vertical or horizontal')
     parser.add_argument('--fig_save_dir', type=str,
                         default='/tmp', help='Directory in which plot images are to be saved')
     parser.add_argument('--save_fig', dest='save_fig', action='store_true')
@@ -60,6 +90,12 @@ if __name__ == "__main__":
         subject_dirs = os.listdir(args.root_dir)
     else:
         subject_dirs = args.subject_dirs
+
+    if args.orient not in ['vertical', 'horizontal']:
+        print('[INFO] Invalid orient value; should be one of: [vertical, horizontal]. Defaulting to vertical...')
+        orient = 'vertical'
+    else:
+        orient = args.orient
 
     yaml_dicts = get_yaml_data(args.root_dir, subject_dirs)
     if len(yaml_dicts) == 0:
@@ -97,17 +133,15 @@ if __name__ == "__main__":
     print('[INFO] Plotting results')
     plt.figure(figsize=(12, 8))
     if args.plot_type == 'bar':
-        plot_bar(filtered_df)
+        plot_bar(filtered_df, orient)
     elif args.plot_type == 'box':
-        plot_box(filtered_df)
+        plot_box(filtered_df, orient)
     else:
         print('[WARN] Invalid plot type: {}. Defaulting to bar plot...'.format(args.plot_type))
         plot_bar(filtered_df)
 
-    plt.xticks(rotation='80', fontsize=None)
     plt.title('recon-surf Command Execution Times (Average over {} runs)'.format(len(yaml_dicts)), fontsize=15, pad=15)
-    plt.ylabel('Time (minutes)', fontsize=None)
-    plt.subplots_adjust(bottom=0.5)
+    plt.tight_layout()
 
     plt.grid()
     fig = plt.gcf()
