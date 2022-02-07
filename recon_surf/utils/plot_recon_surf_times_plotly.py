@@ -22,21 +22,31 @@ plotly_colors = px.colors.qualitative.Plotly
 all_subjects_yaml_dicts = None
 
 def enforce_custom_side_order(df):
-    '''
-    Fixing order of within-group bars (plotly can not do this implictly
-    as seaborn does through hue_order)
-    '''
+    """
+    Enforce the desired order of within-group bars: lh, both, rh.
+    (Plotly does not do this implictly as seaborn does through hue_order)
+
+    :param pd.DataFrame df: dataframe containing command run-time information
+
+    :return: pd.DataFrame df: dataframe following side order enforcement
+    """
     df['hemi'] = pd.Categorical(df['hemi'], ['lh', 'both', 'rh'])
     df = df.sort_values('hemi')
 
     return df
 
 def compute_comparison(df, exemplary_df):
-    '''
-    NOTE: this functions forces averaging of duplicate rows,
-    so std info is lost and would need to maintained elsewhere
+    """
+    Compare the aggregate command run-times of all subjects to those of an exemplary subject.
+    This involves subtracting all command run-times in df with the corresponding entries
+    in the exemplary_df.
+    (NOTE: this function forces averaging of duplicate rows.)
 
-    '''
+    :param pd.DataFrame df: command run-time information of all subjects
+    :param pd.DataFrame exemplary_df: command run-time information of exemplary subject
+
+    :return: pd.DataFrame comparison_df: dataframe containing the differences to the exemplary data
+    """
     cols = df.columns.values.tolist()
     rows_list = []
 
@@ -71,6 +81,17 @@ def compute_comparison(df, exemplary_df):
     return comparison_df
 
 def get_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
+    """
+    Plot a bar plot visualizing the provided command run-time information
+    (using Plotly's histogram function) and return the configured figure.
+
+    :param pd.DataFrame df:  dataframe containing command run-time information
+    :param str exemplary_subject_selection: selected exemplary subject's ID (if any)
+    :param int num_subjects: number of subjects (used to annotate figure)
+    :param str orient: desired figure orientation (horizontal or vertical)
+
+    :return: plotly.graph_objects.Figure fig: figure containing the plot
+    """
     if orient == 'vertical':
         x = 'cmd_name'
         y = 'execution_time'
@@ -126,6 +147,19 @@ def get_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
     return fig
 
 def get_bar_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
+    """
+    Plot a bar plot visualizing the provided command run-time information
+    (using Plotly's bar function) and return the configured figure.
+    Unlike the histogram function, this function allows plotting error bounds (here,
+    these are represented by the standard deviations).
+
+    :param pd.DataFrame df:  dataframe containing command run-time information
+    :param str exemplary_subject_selection: selected exemplary subject's ID (if any)
+    :param int num_subjects: number of subjects (used to annotate figure)
+    :param str orient: desired figure orientation (horizontal or vertical)
+
+    :return: plotly.graph_objects.Figure fig: figure containing the plot
+    """
     means_df = df.groupby(['cmd_name', 'hemi'], as_index=False).mean()
     stds_df = df.groupby(['cmd_name', 'hemi'], as_index=False).std()
 
@@ -188,6 +222,17 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects, orient='horizonta
     return fig
 
 def get_box_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
+    """
+    Plot a box plot visualizing the provided command run-time information
+    (using Plotly's histogram function) and return the configured figure.
+
+    :param pd.DataFrame df:  dataframe containing command run-time information
+    :param str exemplary_subject_selection: selected exemplary subject's ID (if any)
+    :param int num_subjects: number of subjects (used to annotate figure)
+    :param str orient: desired figure orientation (horizontal or vertical)
+
+    :return: plotly.graph_objects.Figure fig: figure containing the plot
+    """
     if orient == 'vertical':
         x = 'cmd_name'
         y = 'execution_time'

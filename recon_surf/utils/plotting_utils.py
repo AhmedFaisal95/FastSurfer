@@ -1,14 +1,26 @@
 #!/usr/bin/env python3
 
 import os
+
 import yaml
 from yaml import CLoader
-
 import numpy as np
 import pandas as pd
 
 
 def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
+    """
+    Extract recon-surf command run-time information from yaml dictionaries obtained from
+    recon-surf_times.yaml files.
+
+    :param list yaml_dicts: dicts extracted using get_yaml_data()
+    :param bool split_recon_all_stages: whether to separate recon-all stages
+
+    :return: list cmd_names: unique command names
+    :return: list execution_times: corresponding command run-times
+    :return: list hemis_list: corresponding command side (lh, rh, or both)
+    :return: list subject_ids: corresponding subject IDs
+    """
     cmd_names = []
     execution_times = []
     hemis_list = []
@@ -66,6 +78,15 @@ def extract_cmd_runtime_data(yaml_dicts, split_recon_all_stages=True):
     return cmd_names, execution_times, hemis_list, subject_ids
 
 def separate_hemis(filtered_df, hemis_list):
+    """
+    Separate all commands in the given dataframe according to the hemisphere
+    (lh, rh, or both), and return the dataframe with the additional grouping column.
+
+    :param pd.DataFrame filtered_df: dataframe containing command run-time information
+    :param list hemis_list: command sides (lh, rh, or both) corresponding to every entry in filtered_df
+
+    :return: pd.DataFrame two_side_filtered_df: dataframe following hemisphere grouping
+    """
     cols = filtered_df.columns.values.tolist()
     cols.append('hemi')
     rows_list = []
@@ -93,6 +114,15 @@ def separate_hemis(filtered_df, hemis_list):
     return two_sided_filtered_df 
 
 def get_yaml_data(root_dir, subject_dirs):
+    """
+    Extracts data from all recon-surf_times.yaml files in the given subject directories
+    within the given root diectory.
+
+    :param str root_dir: full path to the root directory containing subject sub-directories
+    :param list subject_dirs: the subject IDs for which runtime dats should be extracted
+
+    :return: pd.DataFrame two_side_filtered_df: dataframe following hemisphere grouping
+    """
     yaml_dicts = {}
 
     print('[INFO] Extracting data from the files:')
@@ -114,7 +144,18 @@ def get_yaml_data(root_dir, subject_dirs):
 
     return yaml_dicts
 
-def get_top_x_cmds(plotting_df, x):
+def get_top_x_cmds(plotting_df, num_cmds):
+    """
+    Filter entries in the given dataframe to only include the x commands with the
+    highest average run-times.
+    Note that commands that run seperately on both hemispheres are ranked based on
+    max(lh, rh).
+
+    :param pd.DataFrame plotting_df: dataframe containing command run-time information
+    :param int num_cmds: number of commands to plot
+
+    :return: pd.DataFrame plotting_df: filtered dataframe
+    """
     means_df = plotting_df.groupby(['cmd_name', 'hemi'], as_index=False).mean()
     means_df = means_df.loc[means_df['execution_time'] == means_df['execution_time']]   ## Remove NaN entries produced by groupby
     means_df['execution_time'] = means_df['execution_time'].apply(lambda x: np.abs(x))
@@ -129,7 +170,7 @@ def get_top_x_cmds(plotting_df, x):
             top_unique_cmds.append(cmd_name)
             counter += 1
 
-        if counter == x:
+        if counter == num_cmds:
             break
 
     excluded_cmds = [cmd_name for cmd_name in np.unique(means_df.cmd_name.values).tolist() if cmd_name not in top_unique_cmds]
@@ -140,6 +181,15 @@ def get_top_x_cmds(plotting_df, x):
     return plotting_df, top_unique_cmds
 
 def get_selected_cmds(plotting_df, selected_cmds):
+    """
+    Filter entries in the given dataframe to only include the given list of named
+    commands.
+
+    :param pd.DataFrame plotting_df: dataframe containing command run-time information
+    :param list selected_cmds: the names of commands to be plotted
+
+    :return: pd.DataFrame plotting_df: filtered dataframe
+    """
     excluded_cmds = [cmd_name for cmd_name in plotting_df.cmd_name.values if cmd_name not in selected_cmds]
 
     for excluded_cmd in excluded_cmds:
@@ -148,6 +198,15 @@ def get_selected_cmds(plotting_df, selected_cmds):
     return plotting_df
 
 def get_runtimes_exceeding_threshold(plotting_df, time_threshold):
+    """
+    Filter entries in the given dataframe to only include commands whose run-times exceed
+    the given time threshold.
+
+    :param pd.DataFrame plotting_df: dataframe containing command run-time information
+    :param float time_threshold: the lower bound on run-time values to include in plot
+
+    :return: pd.DataFrame plotting_df: filtered dataframe
+    """
     plotting_df = plotting_df.drop(plotting_df[np.abs(plotting_df.execution_time) < time_threshold].index)
 
     return plotting_df

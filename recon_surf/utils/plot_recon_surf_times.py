@@ -16,6 +16,14 @@ tab10_color_palette_ = sns.color_palette('tab10', 10)
 
 
 def plot_bar(df, orient='horizontal'):
+    """
+    Plot a bar plot visualizing the provided command run-time information.
+
+    :param pd.DataFrame df: dataframe containing command run-time information
+    :param str orient: desired figure orientation (horizontal or vertical)
+
+    :return: None
+    """
     if orient == 'vertical':
         sns.barplot(x='cmd_name', y='execution_time', data=df,
                     order=df.groupby('cmd_name').mean()['execution_time'].sort_values().index,
@@ -39,6 +47,14 @@ def plot_bar(df, orient='horizontal'):
         plt.xlabel('Time (minutes)')
 
 def plot_box(df, orient='horizontal'):
+    """
+    Plot a box plot visualizing the provided command run-time information.
+
+    :param pd.DataFrame df: dataframe containing command run-time information
+    :param str orient: desired figure orientation (horizontal or vertical)
+
+    :return: None
+    """
     if orient == 'vertical':
         sns.boxplot(x='cmd_name', y='execution_time', data=df,
                     order=df.groupby('cmd_name').mean()['execution_time'].sort_values().index,
@@ -149,4 +165,3 @@ if __name__ == "__main__":
         fig.savefig(os.path.join(args.fig_save_dir, 'recon-surf_times_plot.png'))
 
     plt.show()
-
