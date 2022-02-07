@@ -85,6 +85,9 @@ if __name__ == "__main__":
         filtered_df = get_selected_cmds(filtered_df, args.select_cmds)
         print('[INFO] Plotting only the desired commands:')
         print(' - ' + '\n - '.join(args.select_cmds))
+        if len(filtered_df) == 0:
+            print('[ERROR] None of the selected command names were found!')
+            sys.exit()
 
     if args.time_threshold is not None:
         filtered_df = get_runtimes_exceeding_threshold(filtered_df, args.time_threshold)
