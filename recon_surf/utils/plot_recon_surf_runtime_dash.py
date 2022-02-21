@@ -318,7 +318,6 @@ if __name__ == "__main__":
 
     base_df = pd.DataFrame({'cmd_name': cmd_names, 'execution_time': execution_time, 'subject_id': subject_ids})
     base_df = separate_hemis(base_df, hemis_list)
-    base_df = base_df.groupby(['cmd_name', 'hemi'], as_index=False).mean()
     base_df = enforce_custom_side_order(base_df)
 
     default_cmd_options = np.unique(base_df['cmd_name'].values).tolist()
