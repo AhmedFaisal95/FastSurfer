@@ -408,7 +408,7 @@ if __name__ == "__main__":
                                                                              {'label': 'Box', 'value': 'Box'},
                                                                              {'label': 'Bar (error bounds)', 'value': 'Bar_2'},
                                                                          ],
-                                                                         value='Bar'),
+                                                                         value='Box'),
                                                                  ], style={'margin-top': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
 
                                                         html.Div([
@@ -419,7 +419,7 @@ if __name__ == "__main__":
                                                                              {'label': 'Horizontal', 'value': 'horizontal'},
                                                                              {'label': 'Vertical', 'value': 'vertical'},
                                                                          ],
-                                                                         value='vertical')
+                                                                         value='horizontal')
                                                                  ], style={'margin-top': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
                                                        ], style={'display': 'inline-block', 'flexWrap': 'wrap', 'verticalAlign': 'top', 'border':'2px black solid' if draw_debug_borders else None}),
 
