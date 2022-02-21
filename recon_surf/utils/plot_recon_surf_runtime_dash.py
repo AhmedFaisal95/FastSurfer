@@ -294,6 +294,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-r','--root_dir', type=str, default='.',    
                         help='Root directory containing subject directories')
+    parser.add_argument('-o','--output_path', type=str, default='/tmp/plot_recon_surf_runtime_dash_figure.png',
+                        help='Path to the file in which plot images will be saved.')
+    parser.add_argument('--save_fig_and_exit', dest='save_fig_and_exit', action='store_true')
 
     args = parser.parse_args()
 
@@ -328,6 +331,13 @@ if __name__ == "__main__":
 
     exemplary_subject_options = subject_options.copy()
     exemplary_subject_options.append({'label': 'None', 'value': 'None'})
+
+    if args.save_fig_and_exit:
+        fig = get_box_fig(base_df, None, len(all_subject_dirs), 'horizontal')
+
+        print('[INFO] Saving figure and exiting...')
+        fig.write_image(args.output_path)
+        sys.exit()
 
     draw_debug_borders = False
 
@@ -545,6 +555,8 @@ if __name__ == "__main__":
             fig = plotly.graph_objs.Figure()
 
         cmd_options = np.unique(plotting_df['cmd_name'].values).tolist()
+
+        fig.write_image(args.output_path)
 
         return fig, cmd_options, reset_state, reload_cmd_state, load_all_subjs_state, subject_selection, time_threshold, top_x, exemplary_subject_selection, disable_time_threshold_option 
 
