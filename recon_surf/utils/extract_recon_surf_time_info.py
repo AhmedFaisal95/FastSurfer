@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import datetime
+import dateutil.parser
 import argparse
 import yaml
 
@@ -16,31 +17,12 @@ def get_recon_all_stage_duration(line, previous_datetime_str):
     :return: str stage_duration: stage duration in seconds
     """
 
-    current_datetime_str = extract_datetime_str(line)
-    current_date_time = datetime.datetime.strptime(current_datetime_str, '%b %d %Y %H:%M:%S')
-    previous_date_time = datetime.datetime.strptime(previous_datetime_str, '%b %d %Y %H:%M:%S')
+    current_datetime_str = ' '.join(line.split()[-6:])
+    current_date_time = dateutil.parser.parse(current_datetime_str)
+    previous_date_time = dateutil.parser.parse(previous_datetime_str)
     stage_duration = (current_date_time - previous_date_time).total_seconds()
 
     return stage_duration
-
-def extract_datetime_str(line):
-    """
-    Construct string containing recon-all stage date and time from a log string,
-    for easier parsing with datetime functions.
-    (Example: "#@# STAGE_NAME Sun Nov 14 12:31:34 UTC 2021" --> "Nov 14 2021 12:31:34")
-
-    :param str line: line in recon-surf.log containing recon-all stage info.
-        This must be of the form:
-        #@# STAGE_NAME Fri Nov 26 15:51:40 UTC 2021
-
-    :return: str datetime_str: extracted datetime string
-    """
-    datetime_str = line.split(' ')[-5] + ' ' + \
-                   line.split(' ')[-4] + ' ' + \
-                   line.split(' ')[-1] + ' ' + \
-                   line.split(' ')[-3]
-
-    return datetime_str
 
 
 if __name__ == "__main__":
@@ -61,7 +43,7 @@ if __name__ == "__main__":
 
     timestamp_feature = '@#@FSTIME'
     recon_all_stage_feature = '#@# '
-    cmd_line_filter_phrases = ['done', 'Done', 'successful', 'finished without error', 'cmdline' ,'Running command']
+    cmd_line_filter_phrases = ['done', 'Done', 'successful', 'finished without error', 'cmdline' ,'Running command', 'failed']
     filtered_cmds = ['ln ', 'rm ']
 
     if args.output_file_path == '':
@@ -78,7 +60,7 @@ if __name__ == "__main__":
 
     yaml_dict = {}
     yaml_dict['date'] = lines[1]
-    yaml_dict['recon-surf_commands'] = []
+    recon_surf_commands = []
 
     for i, line in enumerate(lines):
         ## Use recon_surf "stage" names as top level of recon-surf_commands entries:
@@ -87,7 +69,13 @@ if __name__ == "__main__":
             current_recon_surf_stage_name = stage_line.strip('=')[1:-1].replace(' ', '-')
             if current_recon_surf_stage_name == 'DONE':
                 continue
-            yaml_dict['recon-surf_commands'].append({current_recon_surf_stage_name: []})
+            recon_surf_commands.append({current_recon_surf_stage_name: []})
+
+        if 'recon-surf.sh' in line and '--sid' in line:
+            try:
+                yaml_dict['subject_id'] = line.split()[line.split().index('--sid') + 1]
+            except ValueError:
+                print('[WARN] Could not extract subject ID from log file! It will not be added to the output.')
 
         ## Process lines containing the timestamp_feature:
         if timestamp_feature in line and 'cmdf' not in line:
@@ -95,15 +83,15 @@ if __name__ == "__main__":
             ## Parse out cmd name, start time, and duration:
             entry_dict = {}
 
-            cmd_name = line.split(' ')[3] + ' '
+            cmd_name = line.split()[2] + ' '
             if cmd_name in filtered_cmds:
                 continue
-            date_time_str = line.split(' ')[2]
+            date_time_str = line.split()[1]
             start_time = date_time_str[11:]
 
             start_date_time = datetime.datetime.strptime(date_time_str, '%Y:%m:%d:%H:%M:%S')
-            assert line.split(' ')[6] == 'e'
-            cmd_duration = float(line.split(' ')[7])
+            assert line.split()[5] == 'e'
+            cmd_duration = float(line.split()[6])
 
             end_date_time = (start_date_time + datetime.timedelta(0, float(cmd_duration)))
             end_date_time_str = end_date_time.strftime('%Y:%m:%d:%H:%M:%S')
@@ -136,11 +124,11 @@ if __name__ == "__main__":
                 first_stage = True
 
                 for j in range(cmd_line_index, i):
-                    if recon_all_stage_feature in lines[j] and len(lines[j].split(' ')) > 5:
+                    if recon_all_stage_feature in lines[j] and len(lines[j].split()) > 5:
                         ## the second condition avoids lines such as "#@# 241395 lh 227149"
 
                         if not first_stage:
-                            current_stage_start_time = lines[j].split(' ')[-3]
+                            current_stage_start_time = lines[j].split()[-3]
                             stage_duration = get_recon_all_stage_duration(lines[j], previous_datetime_str)
 
                             stage_dict = {}
@@ -156,13 +144,13 @@ if __name__ == "__main__":
                         else:
                             first_stage = False
 
-                        stage_name = ' '.join(lines[j].split(' ')[:-6][1:])
-                        previous_stage_start_time = lines[j].split(' ')[-3]
-                        previous_datetime_str = extract_datetime_str(lines[j])
+                        stage_name = ' '.join(lines[j].split()[:-6][1:])
+                        previous_stage_start_time = lines[j].split()[-3]
+                        previous_datetime_str = ' '.join(lines[j].split()[-6:])
 
                     ## Lines containing 'Ended' are used to find the end time of the last stage:
                     if 'Ended' in lines[j]:
-                        current_stage_start_time = lines[j].split(' ')[-3]
+                        current_stage_start_time = lines[j].split()[-3]
                         stage_duration = get_recon_all_stage_duration(lines[j], previous_datetime_str)
 
                         stage_dict = {}
@@ -176,7 +164,9 @@ if __name__ == "__main__":
                             
                         entry_dict['stages'].append(stage_dict)
 
-            yaml_dict['recon-surf_commands'][-1][current_recon_surf_stage_name].append(entry_dict)
+            recon_surf_commands[-1][current_recon_surf_stage_name].append(entry_dict)
+
+    yaml_dict['recon-surf_commands'] = recon_surf_commands
 
     print('[INFO] Writing output to file: {}'.format(output_file_path))
     with open(output_file_path, 'w') as outfile:

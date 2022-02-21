@@ -768,6 +768,9 @@ echo " " |& tee -a $LF
   cmd="mri_aparc2aseg --s $subject --volmask --aseg aseg.presurf.hypos"
   RunIt "$cmd" $LF  
   
+  cmd="mri_aparc2aseg --s $subject --volmask --annot aparc.a2009s --aseg aseg.presurf.hypos --a2009s"
+  RunIt "$cmd" $LF
+  
   cmd="recon-all -s $subject -apas2aseg -segstats -wmparc -balabels $fsthreads"
   RunIt "$cmd" $LF
 
@@ -844,7 +847,7 @@ echo " " |& tee -a $LF
 
   # -wmparc based on mapped aparc labels (from input seg) (1min40sec) needs ribbon and we need to point it to aparc.mapped:
   # labels are messed up, due to the aparc mapped surface labels which are incorrect, we need a lookup above.
-  cmd="mri_aparc2aseg --s $subject --labelwm --hypo-as-wm --rip-unknown --volmask --o $mdir/wmparc.mapped.mgz --ctxseg $mdir/aparc+aseg.orig.mgz --annot aparc.mapped --annot-table $ldir/aparc.annot.mapped.ctab"
+  cmd="mri_aparc2aseg --s $subject --labelwm --hypo-as-wm --rip-unknown --volmask --o $mdir/wmparc.mapped.mgz --ctxseg $mdir/aparc.mapped+aseg.mgz --annot aparc.mapped --annot-table $ldir/aparc.annot.mapped.ctab"
   RunIt "$cmd" $LF
    
   # takes a few mins

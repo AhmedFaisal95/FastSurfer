@@ -44,11 +44,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     	--exclude='freesurfer/lib/qt'
 
 # Install miniconda and needed python packages (for FastSurferCNN)
-RUN wget -qO ~/miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
+RUN wget -qO ~/miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-py37_4.10.3-Linux-x86_64.sh  && \
      chmod +x ~/miniconda.sh && \
      ~/miniconda.sh -b -p /opt/conda && \
      rm ~/miniconda.sh && \
-     /opt/conda/bin/conda install -y python=$PYTHON_VERSION numpy scipy matplotlib h5py scikit-image && \
+     /opt/conda/bin/conda install -y python=$PYTHON_VERSION python-dateutil pyyaml numpy scipy matplotlib h5py scikit-image && \
      /opt/conda/bin/conda install -y -c pytorch cudatoolkit=10.0 "pytorch=1.2.0=py3.6_cuda10.0.130_cudnn7.6.2_0" torchvision=0.4.0 && \
      /opt/conda/bin/conda install -y -c conda-forge scikit-sparse nibabel=2.5.1 pillow=8.3.2 && \
      /opt/conda/bin/conda clean -ya
