@@ -7,6 +7,10 @@ ARG PYTHON_VERSION=3.6
 # Install custom libraries + freesurfer 6.0 (and necessary dependencies)
 RUN apt-get update && apt-get install -y --no-install-recommends \
          build-essential \
+         libglib2.0-0 \
+         libxt6 \
+         libxmu6 \
+         imagemagick \
          cmake \
          git \
          vim \
@@ -48,7 +52,7 @@ RUN wget -qO ~/miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-py37_
      chmod +x ~/miniconda.sh && \
      ~/miniconda.sh -b -p /opt/conda && \
      rm ~/miniconda.sh && \
-     /opt/conda/bin/conda install -y python=$PYTHON_VERSION python-dateutil pyyaml numpy scipy matplotlib h5py scikit-image && \
+     /opt/conda/bin/conda install -y python=$PYTHON_VERSION python-dateutil pyyaml numpy scipy matplotlib h5py scikit-image pandas seaborn && \
      /opt/conda/bin/conda install -y -c pytorch cudatoolkit=10.0 "pytorch=1.2.0=py3.6_cuda10.0.130_cudnn7.6.2_0" torchvision=0.4.0 && \
      /opt/conda/bin/conda install -y -c conda-forge scikit-sparse nibabel=2.5.1 pillow=8.3.2 && \
      /opt/conda/bin/conda clean -ya
@@ -56,6 +60,10 @@ ENV PATH /opt/conda/bin:$PATH
 
 # install pip related dependencies
 RUN python$PYTHON_VERSION -m pip install -U git+https://github.com/Deep-MI/LaPy.git#egg=lapy
+
+RUN python$PYTHON_VERSION -m pip install -U transforms3d
+RUN python$PYTHON_VERSION -m pip install -U dash
+RUN python$PYTHON_VERSION -m pip install -U kaleido
 
 # Add FreeSurfer Environment variables (.license file needed, alternatively export FS_LICENSE=path/to/license)
 ENV OS=Linux \
