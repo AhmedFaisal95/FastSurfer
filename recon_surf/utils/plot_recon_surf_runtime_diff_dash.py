@@ -86,7 +86,7 @@ def get_fig(df, exemplary_subject_selection, num_subjects, orient='horizontal'):
                        )
 
     fig.update_layout(
-        title_text='recon-surf Command Execution Times (Average over {} runs)'.format(num_subjects),
+        title_text='recon-surf Command Execution Time Differences (Dir 2 - Dir 1; Average over {} runs)'.format(num_subjects),
         bargap=0.1,
         bargroupgap=0.0,
         template='seaborn',
@@ -147,7 +147,7 @@ def get_bar_fig(df, exemplary_subject_selection, num_subjects, orient='horizonta
                      )
 
     fig.update_layout(
-        title_text='recon-surf Command Execution Times (Average over {} runs)'.format(num_subjects),
+        title_text='recon-surf Command Execution Time Differences (Dir 2 - Dir 1; Average over {} runs)'.format(num_subjects),
         template='seaborn',
         width=1200, height=800,
         legend=dict(title=None, orientation="h", y=1,
@@ -206,7 +206,7 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects, orient='horizonta
                  )
 
     fig.update_layout(
-        title_text='recon-surf Command Execution Times (Average over {} runs)'.format(num_subjects),
+        title_text='recon-surf Command Execution Time Differences (Dir 2 - Dir 1; Average over {} runs)'.format(num_subjects),
         template='seaborn',
         width=1200, height=800,
         legend=dict(title=None, orientation="h", y=1,
@@ -244,7 +244,7 @@ def get_box_fig(df, exemplary_subject_selection, num_subjects, orient='horizonta
 
     return fig
 
-def get_execution_time_diff_df(base_df_1, base_df_2):
+def get_execution_time_diff_df(base_df_1, base_df_2, verbose=False):
     base_df_1['cmd_name'] = base_df_1['cmd_name'].apply(lambda x: x.split('/')[-1] if '/' in x else x)
     base_df_2['cmd_name'] = base_df_2['cmd_name'].apply(lambda x: x.split('/')[-1] if '/' in x else x)
 
@@ -261,10 +261,10 @@ def get_execution_time_diff_df(base_df_1, base_df_2):
                                         (base_df_1['hemi'] == hemi)]
 
         if len(base_df_1_entry) == 0:
-            print('[WARN] First dataframe does not have an entry with the following details:')
-            print('cmd_name: {}, hemi: {}, subject_id: {}'.format(cmd_name, hemi, subject_id))
-            print('Will skip this data point!\n')
-
+            if verbose:
+                print('[WARN] First dataframe does not have an entry with the following details:')
+                print('cmd_name: {}, hemi: {}, subject_id: {}'.format(cmd_name, hemi, subject_id))
+                print('Will skip this data point!\n')
         else:
             cmd_time = row['execution_time']
             diff = cmd_time - base_df_1_entry.execution_time.values.item()
@@ -290,9 +290,10 @@ def get_execution_time_diff_df(base_df_1, base_df_2):
                                         (base_df_2['hemi'] == hemi)]
 
         if len(base_df_2_entry) == 0:
-            print('[WARN] Second dataframe does not have an entry with the following details:')
-            print('cmd_name: {}, hemi: {}, subject_id: {}'.format(cmd_name, hemi, subject_id))
-            print('Will skip this data point!\n')
+            if verbose:
+                print('[WARN] Second dataframe does not have an entry with the following details:')
+                print('cmd_name: {}, hemi: {}, subject_id: {}'.format(cmd_name, hemi, subject_id))
+                print('Will skip this data point!\n')
 
         else:
             cmd_time = row['execution_time']
@@ -305,10 +306,14 @@ def get_execution_time_diff_df(base_df_1, base_df_2):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-r1','--root_dir_1', type=str, default='.',    
+    parser.add_argument('-r1','--root_dir_1', type=str, required=True,
                         help='Root directory containing subject directories')
-    parser.add_argument('-r2','--root_dir_2', type=str, default='.',    
+    parser.add_argument('-r2','--root_dir_2', type=str, required=True,
                         help='Root directory containing subject directories')
+    parser.add_argument('-o','--output_path', type=str, default='/tmp/plot_recon_surf_runtime_diff_dash_figure.png',
+                        help='Path to the file in which plot images will be saved.')
+    parser.add_argument('--save_fig_and_exit', dest='save_fig_and_exit', action='store_true')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true')
 
     args = parser.parse_args()
 
@@ -349,9 +354,17 @@ if __name__ == "__main__":
     base_df_2 = base_df_2.groupby(['cmd_name', 'hemi', 'subject_id'], as_index=False).mean()
     base_df_2 = enforce_custom_side_order(base_df_2)
 
-    diff_df = get_execution_time_diff_df(base_df_1, base_df_2)
+    print('[INFO] Computing run-time differences...')
+    diff_df = get_execution_time_diff_df(base_df_1, base_df_2, args.verbose)
 
     all_subject_dirs = diff_df.subject_id.unique().tolist()
+
+    if args.save_fig_and_exit:
+        fig = get_box_fig(diff_df, None, len(all_subject_dirs), 'horizontal')
+
+        print('[INFO] Saving figure and exiting...')
+        fig.write_image(args.output_path)
+        sys.exit()
 
     default_cmd_options = np.unique(diff_df['cmd_name'].values).tolist()
     cmd_multi_dropdown_options = [{'label': cmd_name, 'value': cmd_name} for cmd_name in default_cmd_options]
@@ -433,7 +446,7 @@ if __name__ == "__main__":
                                                                              {'label': 'Box', 'value': 'Box'},
                                                                              {'label': 'Bar (error bounds)', 'value': 'Bar_2'},
                                                                          ],
-                                                                         value='Bar'),
+                                                                         value='Box'),
                                                                  ], style={'margin-top': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
 
                                                         html.Div([
@@ -444,7 +457,7 @@ if __name__ == "__main__":
                                                                              {'label': 'Horizontal', 'value': 'horizontal'},
                                                                              {'label': 'Vertical', 'value': 'vertical'},
                                                                          ],
-                                                                         value='vertical')
+                                                                         value='horizontal')
                                                                  ], style={'margin-top': '2%', 'border':'2px black solid' if draw_debug_borders else None}),
                                                        ], style={'display': 'inline-block', 'flexWrap': 'wrap', 'verticalAlign': 'top', 'border':'2px black solid' if draw_debug_borders else None}),
 
@@ -552,7 +565,7 @@ if __name__ == "__main__":
         df_2 = df_2.groupby(['cmd_name', 'hemi', 'subject_id'], as_index=False).mean()
 
         ## NOTE: at the moment, always df_2 - df_1:
-        plotting_df= get_execution_time_diff_df(df_1, df_2)
+        plotting_df= get_execution_time_diff_df(df_1, df_2, args.verbose)
 
         ## TODO: incorporate or remove exemplary subject comaprison
         # if exemplary_subject_selection != 'None' and exemplary_subject_selection is not None:
@@ -590,6 +603,8 @@ if __name__ == "__main__":
                 fig = get_bar_fig(plotting_df, exemplary_subject_selection, plotting_df.subject_id.unique().size, plot_orientation)
         else:
             fig = plotly.graph_objs.Figure()
+
+        fig.write_image(args.output_path)
 
         cmd_options = np.unique(plotting_df['cmd_name'].values).tolist()
 
