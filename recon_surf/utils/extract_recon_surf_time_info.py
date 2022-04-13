@@ -4,8 +4,10 @@ import dateutil.parser
 import argparse
 import yaml
 
+import dateparser
 
-def get_recon_all_stage_duration(line, previous_datetime_str):
+
+def get_recon_all_stage_duration(line, previous_datetime_str, german_format=False):
     """
     Extract the duration of a recon-all stage from its log string.
 
@@ -18,8 +20,12 @@ def get_recon_all_stage_duration(line, previous_datetime_str):
     """
 
     current_datetime_str = ' '.join(line.split()[-6:])
-    current_date_time = dateutil.parser.parse(current_datetime_str)
-    previous_date_time = dateutil.parser.parse(previous_datetime_str)
+    if not german_format:
+        current_date_time = dateutil.parser.parse(current_datetime_str)
+        previous_date_time = dateutil.parser.parse(previous_datetime_str)
+    else:
+        current_date_time = dateparser.parse(current_datetime_str)
+        previous_date_time = dateparser.parse(previous_datetime_str)
     stage_duration = (current_date_time - previous_date_time).total_seconds()
 
     return stage_duration
@@ -34,6 +40,7 @@ if __name__ == "__main__":
                         default='', help='Path to output recon-surf_time.log file')
     parser.add_argument('--time_units', type=str,
                         default='m', help='Units of time [s, m]')
+    parser.add_argument('--german_format', dest='german_format', action='store_true')
     args = parser.parse_args()
 
     lines = []
