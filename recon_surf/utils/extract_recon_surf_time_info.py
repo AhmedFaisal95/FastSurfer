@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
                         if not first_stage:
                             current_stage_start_time = lines[j].split()[-3]
-                            stage_duration = get_recon_all_stage_duration(lines[j], previous_datetime_str)
+                            stage_duration = get_recon_all_stage_duration(lines[j], previous_datetime_str, args.german_format)
 
                             stage_dict = {}
                             stage_dict['stage_name'] = stage_name
@@ -158,7 +158,7 @@ if __name__ == "__main__":
                     ## Lines containing 'Ended' are used to find the end time of the last stage:
                     if 'Ended' in lines[j]:
                         current_stage_start_time = lines[j].split()[-3]
-                        stage_duration = get_recon_all_stage_duration(lines[j], previous_datetime_str)
+                        stage_duration = get_recon_all_stage_duration(lines[j], previous_datetime_str, args.german_format)
 
                         stage_dict = {}
                         stage_dict['stage_name'] = stage_name                        
